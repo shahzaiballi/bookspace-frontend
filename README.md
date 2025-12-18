@@ -1,16 +1,101 @@
-# fyp_future
+---
 
-A new Flutter project.
+```md
+# NovelBook – Flutter Frontend Application
 
-## Getting Started
+## Overview
+NovelBook is a Flutter-based mobile application frontend developed as a Final Year Project (FYP).  
+The application focuses on UI/UX design for reading and managing books using static (dummy) data.
 
-This project is a starting point for a Flutter application.
+This repository contains frontend implementation only.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Features
+- Login, Signup and Forgot Password screens
+- Form validation (email & password)
+- Home screen with book listings
+- Reading progress indicators
+- My Library with filters (All, In Progress, Completed, Favorites)
+- Search books by title
+- Mark books as favorite
+- Delete books locally
+- Custom glowing bottom navigation bar
+- Reusable custom widgets and animations
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Screens
+- Login
+- Signup
+- Forgot Password
+- Home
+- My Library
+- Add Book (UI bottom sheet)
+
+---
+
+## Project Structure
+```
+
+lib/
+├── core/              # Constants, routes, validators
+├── features/          # All screens and UI logic
+├── shared_widgets/    # Reusable components
+└── main.dart          # Application entry point
+
+````
+
+---
+
+## How to Run
+Run the following commands:
+```bash
+flutter pub get
+flutter run
+````
+
+---
+
+## Dependencies (Frontend Only)
+
+* Flutter SDK
+* Dart
+* Material UI components
+* Custom widgets and animations
+* Local state management
+* Dummy data models
+
+No backend, database, or external APIs are used.
+
+---
+
+## Assets
+
+Make sure this folder exists in the project:
+
+```
+assets/images/
+```
+
+All background images and book covers are loaded from this directory.
+
+---
+
+## Limitations
+
+* Static (dummy) data only
+* No real authentication
+* No online data fetching
+* No file upload functionality
+
+---
+
+## Author
+
+**Aroona Bibi**
+Final Year Project – Flutter Frontend
+
+````
+
+
