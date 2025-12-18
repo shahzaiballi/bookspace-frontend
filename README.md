@@ -1,63 +1,64 @@
 ---
 
-```md
-# NovelBook – Flutter Frontend Application
+# 📚 NovelBook – Flutter Frontend Application
 
-## Overview
-NovelBook is a Flutter-based mobile application frontend developed as a Final Year Project (FYP).  
-The application focuses on UI/UX design for reading and managing books using static (dummy) data.
+## 📝 Overview
 
-This repository contains frontend implementation only.
+NovelBook is a Flutter-based mobile application frontend developed as a **Final Year Project (FYP)**.
+The application focuses on **UI/UX design** for reading and managing books using **static (dummy) data**.
 
----
-
-## Features
-- Login, Signup and Forgot Password screens
-- Form validation (email & password)
-- Home screen with book listings
-- Reading progress indicators
-- My Library with filters (All, In Progress, Completed, Favorites)
-- Search books by title
-- Mark books as favorite
-- Delete books locally
-- Custom glowing bottom navigation bar
-- Reusable custom widgets and animations
+This repository contains **frontend implementation only**.
 
 ---
 
-## Screens
-- Login
-- Signup
-- Forgot Password
-- Home
-- My Library
-- Add Book (UI bottom sheet)
+## ✨ Features
+
+* 🔐 Login, Signup and Forgot Password screens
+* ✅ Form validation (email & password)
+* 🏠 Home screen with book listings
+* 📊 Reading progress indicators
+* 📚 My Library with filters (All, In Progress, Completed, Favorites)
+* 🔍 Search books by title
+* ❤️ Mark books as favorite
+* 🗑️ Delete books locally
+* 🌈 Custom glowing bottom navigation bar
+* 🧩 Reusable custom widgets and animations
 
 ---
 
-## Project Structure
-```
+## 📱 Screens
 
+* Login
+* Signup
+* Forgot Password
+* Home
+* My Library
+* Add Book (UI bottom sheet)
+
+---
+
+## 🗂️ Project Structure
+
+```text
 lib/
 ├── core/              # Constants, routes, validators
 ├── features/          # All screens and UI logic
 ├── shared_widgets/    # Reusable components
 └── main.dart          # Application entry point
-
-````
+```
 
 ---
 
-## How to Run
-Run the following commands:
+## ▶️ How to Run
+
 ```bash
 flutter pub get
 flutter run
-````
+```
 
 ---
 
-## Dependencies (Frontend Only)
+## 📦 Dependencies (Frontend Only)
 
 * Flutter SDK
 * Dart
@@ -66,15 +67,13 @@ flutter run
 * Local state management
 * Dummy data models
 
-No backend, database, or external APIs are used.
+🚫 No backend, database, or external APIs are used.
 
 ---
 
-## Assets
+## 🖼️ Assets
 
-Make sure this folder exists in the project:
-
-```
+```text
 assets/images/
 ```
 
@@ -82,7 +81,7 @@ All background images and book covers are loaded from this directory.
 
 ---
 
-## Limitations
+## ⚠️ Limitations
 
 * Static (dummy) data only
 * No real authentication
@@ -91,11 +90,11 @@ All background images and book covers are loaded from this directory.
 
 ---
 
-## Author
+## 👩‍💻 Author
 
 **Aroona Bibi**
 Final Year Project – Flutter Frontend
 
-````
+---
 
 
