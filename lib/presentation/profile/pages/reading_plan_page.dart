@@ -1,0 +1,396 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/utils/responsive_utils.dart';
+import '../controllers/reading_plan_controller.dart';
+
+class ReadingPlanPage extends ConsumerStatefulWidget {
+  const ReadingPlanPage({super.key});
+
+  @override
+  ConsumerState<ReadingPlanPage> createState() => _ReadingPlanPageState();
+}
+
+class _ReadingPlanPageState extends ConsumerState<ReadingPlanPage> {
+  late double _dailyMinutes;
+  late int _daysPerWeek;
+  late String _preferredTime;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentPlan = ref.read(readingPlanProvider);
+    _dailyMinutes = currentPlan.dailyMinutes.toDouble();
+    _daysPerWeek = currentPlan.daysPerWeek;
+    _preferredTime = currentPlan.preferredTime;
+  }
+
+  void _savePlan() {
+    ref.read(readingPlanProvider.notifier).updatePlan(
+      dailyMinutes: _dailyMinutes.toInt(),
+      daysPerWeek: _daysPerWeek,
+      preferredTime: _preferredTime,
+    );
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Reading plan saved successfully!'), backgroundColor: Colors.green),
+    );
+    
+    context.pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+     int weeklyReadingMins = _dailyMinutes.toInt() * _daysPerWeek;
+     // Mock math: Assume 235 pages left, reading rate ~ 1 page per minute
+     int totalDaysNeeded = (235 / _dailyMinutes).ceil();
+     int weeksNeeded = (totalDaysNeeded / _daysPerWeek).ceil();
+     int daysNeeded = totalDaysNeeded; // For flat count
+
+     return Scaffold(
+        backgroundColor: const Color(0xFF0F1626),
+        appBar: AppBar(
+           backgroundColor: const Color(0xFF0F1626),
+           elevation: 0,
+           leading: IconButton(
+              icon: Container(
+                 padding: EdgeInsets.all(context.responsive.sp(8)),
+                 decoration: const BoxDecoration(
+                    color: Color(0xFF1E233D),
+                    shape: BoxShape.circle,
+                 ),
+                 child: Icon(Icons.arrow_back, color: Colors.white, size: context.responsive.sp(18)),
+              ),
+              onPressed: () => context.pop(), 
+           ),
+           title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                 Text('Reading Plan', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(16), fontWeight: FontWeight.bold)),
+                 Text('Atomic Habits', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(12))),
+              ],
+           ),
+           centerTitle: false,
+        ),
+        body: SafeArea(
+           child: SingleChildScrollView(
+              padding: EdgeInsets.all(context.responsive.wp(20)),
+              child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                 children: [
+                    // Mock Current Progress Card
+                    Container(
+                       padding: EdgeInsets.all(context.responsive.sp(20)),
+                       decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                             colors: [Color(0xFF381A5D), Color(0xFF1E2A4F)],
+                          ),
+                          borderRadius: BorderRadius.circular(context.responsive.sp(16)),
+                       ),
+                       child: Column(
+                          children: [
+                             Row(
+                                children: [
+                                   Container(
+                                      padding: EdgeInsets.all(context.responsive.sp(10)),
+                                      decoration: BoxDecoration(
+                                         color: const Color(0xFFB062FF).withOpacity(0.2),
+                                         shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.track_changes, color: const Color(0xFFB062FF), size: context.responsive.sp(20)),
+                                   ),
+                                   SizedBox(width: context.responsive.wp(12)),
+                                   Expanded(
+                                      child: Column(
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                            Text('Current Progress', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(15), fontWeight: FontWeight.bold)),
+                                            Text('Keep up the great work!', style: TextStyle(color: Colors.white70, fontSize: context.responsive.sp(12))),
+                                         ],
+                                      ),
+                                   )
+                                ],
+                             ),
+                             SizedBox(height: context.responsive.sp(20)),
+                             Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                   _buildProgressStat('18%', 'Complete', context),
+                                   _buildProgressStat('235', 'Pages Left', context),
+                                   _buildProgressStat('50', 'Pages Read', context),
+                                ],
+                             ),
+                             SizedBox(height: context.responsive.sp(16)),
+                             ClipRRect(
+                                borderRadius: BorderRadius.circular(context.responsive.sp(4)),
+                                child: LinearProgressIndicator(
+                                   value: 0.18,
+                                   backgroundColor: Colors.white12,
+                                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFB062FF)),
+                                   minHeight: context.responsive.sp(6),
+                                ),
+                             )
+                          ],
+                       ),
+                    ),
+                    
+                    SizedBox(height: context.responsive.sp(20)),
+
+                    // Daily Reading Time
+                    _buildSectionContainer(
+                       context: context,
+                       icon: Icons.access_time_filled,
+                       title: 'Daily Reading Time',
+                       subtitle: 'How long do you want to read each day?',
+                       child: Column(
+                          children: [
+                             Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                   Text('Minutes per day', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(13))),
+                                   Text('${_dailyMinutes.toInt()} min', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(18), fontWeight: FontWeight.bold)),
+                                ],
+                             ),
+                             SizedBox(height: context.responsive.sp(8)),
+                             SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                   activeTrackColor: const Color(0xFFB062FF),
+                                   inactiveTrackColor: Colors.white12,
+                                   thumbColor: const Color(0xFFB062FF),
+                                   overlayColor: const Color(0xFFB062FF).withOpacity(0.2),
+                                   trackHeight: context.responsive.sp(4),
+                                ),
+                                child: Slider(
+                                   value: _dailyMinutes,
+                                   min: 15,
+                                   max: 180,
+                                   divisions: 33, // 5 min increments
+                                   onChanged: (val) {
+                                      setState(() => _dailyMinutes = val);
+                                   },
+                                ),
+                             ),
+                             Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                   Text('15 min', style: TextStyle(color: Colors.white24, fontSize: context.responsive.sp(11))),
+                                   Text('180 min', style: TextStyle(color: Colors.white24, fontSize: context.responsive.sp(11))),
+                                ],
+                             )
+                          ],
+                       )
+                    ),
+
+                    SizedBox(height: context.responsive.sp(20)),
+
+                    // Days Per Week
+                    _buildSectionContainer(
+                       context: context,
+                       icon: Icons.calendar_month,
+                       title: 'Days Per Week',
+                       subtitle: 'How many days a week can you commit?',
+                       child: Column(
+                          children: [
+                             Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: List.generate(7, (index) {
+                                   int day = index + 1;
+                                   bool isSelected = day <= _daysPerWeek;
+                                   return GestureDetector(
+                                      onTap: () => setState(() => _daysPerWeek = day),
+                                      child: Container(
+                                         width: context.responsive.sp(36),
+                                         height: context.responsive.sp(36),
+                                         decoration: BoxDecoration(
+                                            color: isSelected ? const Color(0xFFB062FF) : const Color(0xFF0F1626),
+                                            borderRadius: BorderRadius.circular(context.responsive.sp(8)),
+                                            border: Border.all(color: isSelected ? Colors.transparent : Colors.white12),
+                                         ),
+                                         child: Center(
+                                            child: Text(
+                                               '$day',
+                                               style: TextStyle(
+                                                  color: isSelected ? Colors.white : Colors.white54,
+                                                  fontSize: context.responsive.sp(14),
+                                                  fontWeight: FontWeight.bold,
+                                               ),
+                                            )
+                                         ),
+                                      ),
+                                   );
+                                }),
+                             ),
+                             SizedBox(height: context.responsive.sp(16)),
+                             Text(
+                                'Selected $_daysPerWeek days/week',
+                                style: TextStyle(color: const Color(0xFFB062FF), fontSize: context.responsive.sp(12), fontWeight: FontWeight.bold),
+                             )
+                          ],
+                       )
+                    ),
+
+                    SizedBox(height: context.responsive.sp(24)),
+                    Text('Preferred Reading Time', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(15), fontWeight: FontWeight.bold)),
+                    SizedBox(height: context.responsive.sp(12)),
+
+                    // Choice Chips
+                    _buildTimeChoice(context, 'Morning', '5AM - 12PM', Icons.wb_sunny_outlined),
+                    _buildTimeChoice(context, 'Afternoon', '12PM - 6PM', Icons.wb_twilight),
+                    _buildTimeChoice(context, 'Evening', '6PM - 12AM', Icons.nights_stay_outlined),
+
+                    SizedBox(height: context.responsive.sp(24)),
+
+                    // Output Calc Block
+                    Container(
+                       padding: EdgeInsets.all(context.responsive.sp(20)),
+                       decoration: BoxDecoration(
+                          color: const Color(0xFF1E233D),
+                          borderRadius: BorderRadius.circular(context.responsive.sp(16)),
+                       ),
+                       child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                             Text('Estimated Completion', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(15), fontWeight: FontWeight.bold)),
+                             SizedBox(height: context.responsive.sp(20)),
+                             _buildCalcRow('Daily Time:', '${_dailyMinutes.toInt()} minutes', context),
+                             SizedBox(height: context.responsive.sp(12)),
+                             _buildCalcRow('Days per Week:', '$_daysPerWeek days', context),
+                             SizedBox(height: context.responsive.sp(12)),
+                             _buildCalcRow('Preferred Time:', _preferredTime, context),
+                             
+                             Padding(
+                                padding: EdgeInsets.symmetric(vertical: context.responsive.sp(16)),
+                                child: const Divider(color: Colors.white12, thickness: 1),
+                             ),
+
+                             _buildCalcRow('Weekly Reading:', '$weeklyReadingMins minutes', context, true),
+                             SizedBox(height: context.responsive.sp(12)),
+                             _buildCalcRow('Finish in approximately:', '$weeksNeeded weeks ($daysNeeded days)', context, true),
+                          ],
+                       ),
+                    ),
+
+                    SizedBox(height: context.responsive.sp(32)),
+
+                    // Save Plan Button
+                    SizedBox(
+                       width: double.infinity,
+                       height: context.responsive.sp(52),
+                       child: DecoratedBox(
+                          decoration: BoxDecoration(
+                             gradient: const LinearGradient(colors: [Color(0xFF9146FF), Color(0xFF3861FB)]),
+                             borderRadius: BorderRadius.circular(context.responsive.sp(12)),
+                          ),
+                          child: ElevatedButton.icon(
+                             onPressed: _savePlan,
+                             icon: Icon(Icons.save_outlined, color: Colors.white, size: context.responsive.sp(18)),
+                             label: Text('Save Reading Plan', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(15), fontWeight: FontWeight.bold)),
+                             style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.responsive.sp(12))),
+                             ),
+                          ),
+                       ),
+                    ),
+                    SizedBox(height: context.responsive.sp(40)),
+                 ],
+              )
+           ),
+        ),
+     );
+  }
+
+  Widget _buildTimeChoice(BuildContext context, String title, String range, IconData icon) {
+     bool isSelected = _preferredTime == title;
+     return GestureDetector(
+        onTap: () => setState(() => _preferredTime = title),
+        child: Container(
+           margin: EdgeInsets.only(bottom: context.responsive.sp(12)),
+           padding: EdgeInsets.all(context.responsive.sp(16)),
+           decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFB062FF).withOpacity(0.15) : const Color(0xFF1E233D),
+              borderRadius: BorderRadius.circular(context.responsive.sp(12)),
+              border: Border.all(color: isSelected ? const Color(0xFFB062FF) : Colors.transparent, width: 1.5),
+           ),
+           child: Row(
+              children: [
+                 Icon(icon, color: isSelected ? const Color(0xFFB062FF) : Colors.white54, size: context.responsive.sp(20)),
+                 SizedBox(width: context.responsive.wp(16)),
+                 Expanded(
+                    child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                          Text(title, style: TextStyle(color: isSelected ? const Color(0xFFB062FF) : Colors.white, fontSize: context.responsive.sp(14), fontWeight: FontWeight.bold)),
+                          Text(range, style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(12))),
+                       ],
+                    ),
+                 ),
+                 if (isSelected) 
+                    Icon(Icons.check_circle, color: const Color(0xFFB062FF), size: context.responsive.sp(20))
+              ],
+           ),
+        ),
+     );
+  }
+
+  Widget _buildCalcRow(String label, String value, BuildContext context, [bool isHighlight = false]) {
+     return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+           Text(label, style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(13))),
+           Text(
+              value, 
+              style: TextStyle(
+                 color: isHighlight ? const Color(0xFFB062FF) : Colors.white, 
+                 fontSize: context.responsive.sp(13), 
+                 fontWeight: FontWeight.bold
+              )
+           ),
+        ],
+     );
+  }
+
+  Widget _buildProgressStat(String value, String label, BuildContext context) {
+     return Column(
+        children: [
+           Text(value, style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(18), fontWeight: FontWeight.bold)),
+           SizedBox(height: context.responsive.sp(4)),
+           Text(label, style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(11))),
+        ],
+     );
+  }
+
+  Widget _buildSectionContainer({required BuildContext context, required IconData icon, required String title, required String subtitle, required Widget child}) {
+     return Container(
+        padding: EdgeInsets.all(context.responsive.sp(20)),
+        decoration: BoxDecoration(color: const Color(0xFF1E233D), borderRadius: BorderRadius.circular(context.responsive.sp(16))),
+        child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+              Row(
+                 children: [
+                    Container(
+                       padding: EdgeInsets.all(context.responsive.sp(8)),
+                       decoration: BoxDecoration(color: const Color(0xFF2A2F4C), borderRadius: BorderRadius.circular(context.responsive.sp(8))),
+                       child: Icon(icon, color: const Color(0xFFB062FF), size: context.responsive.sp(16)),
+                    ),
+                    SizedBox(width: context.responsive.wp(12)),
+                    Expanded(
+                       child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                             Text(title, style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(14), fontWeight: FontWeight.bold)),
+                             Text(subtitle, style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(11))),
+                          ],
+                       ),
+                    )
+                 ],
+              ),
+              SizedBox(height: context.responsive.sp(20)),
+              child,
+           ],
+        ),
+     );
+  }
+}

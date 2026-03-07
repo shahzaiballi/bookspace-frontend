@@ -1,0 +1,18 @@
+import '../entities/book_entity.dart';
+import '../entities/book_detail_entity.dart';
+import '../entities/user_stats_entity.dart';
+import '../entities/add_book_params.dart';
+import '../entities/chapter_entity.dart';
+import '../entities/summary_entity.dart';
+
+abstract class BookRepository {
+  Future<List<ChapterEntity>> getChapters(String bookId);
+  Future<List<SummaryEntity>> getChapterSummaries(String chapterId);
+  Future<void> addBook(AddBookParams params);
+  Future<BookDetailEntity> getBookDetails(String id);
+  Future<UserProgressEntity> getCurrentProgress();
+  Future<InsightsEntity> getDailyInsights();
+  Future<List<BookEntity>> getRecommendedBooks();
+  Future<List<BookEntity>> getTrendingBooks();
+  Future<List<BookEntity>> getLibraryBooks();
+}
