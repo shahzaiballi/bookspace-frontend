@@ -9,21 +9,49 @@ class InsightsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Today's Insights",
-             style: TextStyle(
-               color: Colors.white,
-               fontSize: context.responsive.sp(18),
-               fontWeight: FontWeight.bold,
-             ),
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(20)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Book Insights',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: context.responsive.sp(18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Functionality to view all insights to be added later
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: const Color(0xFFB062FF),
+                        fontSize: context.responsive.sp(13),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward,
+                      color: const Color(0xFFB062FF),
+                      size: context.responsive.sp(14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: context.responsive.sp(16)),
-          Row(
+        ),
+        SizedBox(height: context.responsive.sp(16)), // Add spacing between header and grid
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(20)),
+          child: Row(
             children: [
                Expanded(child: _InsightBox(
                  icon: Icons.bookmark_border, 
@@ -49,9 +77,9 @@ class InsightsGrid extends StatelessWidget {
                  context: context
                )),
             ],
-          )
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 

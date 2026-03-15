@@ -8,6 +8,7 @@ class HorizontalBookList extends StatelessWidget {
   final List<BookEntity> books;
   final bool showBadges;
   final bool showsAuthor;
+  final VoidCallback? onViewAll;
 
   const HorizontalBookList({
     super.key, 
@@ -15,6 +16,7 @@ class HorizontalBookList extends StatelessWidget {
     required this.books,
     this.showBadges = false,
     this.showsAuthor = true,
+    this.onViewAll,
   });
 
   @override
@@ -43,15 +45,16 @@ class HorizontalBookList extends StatelessWidget {
                    ]
                  ],
                ),
-               TextButton(
-                 onPressed: () {},
-                 child: Row(
-                   children: [
-                     Text('View All', style: TextStyle(color: const Color(0xFFB062FF), fontSize: context.responsive.sp(13))),
-                     Icon(Icons.arrow_forward, color: const Color(0xFFB062FF), size: context.responsive.sp(14))
-                   ],
-                 ),
-               )
+               if (onViewAll != null)
+                 TextButton(
+                   onPressed: onViewAll,
+                   child: Row(
+                     children: [
+                       Text('View All', style: TextStyle(color: const Color(0xFFB062FF), fontSize: context.responsive.sp(13))),
+                       Icon(Icons.arrow_forward, color: const Color(0xFFB062FF), size: context.responsive.sp(14))
+                     ],
+                   ),
+                 )
             ],
           ),
         ),

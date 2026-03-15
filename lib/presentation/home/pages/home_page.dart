@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/currently_reading_card.dart';
@@ -135,7 +136,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                      ],
                                    ),
                                    TextButton(
-                                     onPressed: () {},
+                                     onPressed: () {
+                                        context.push('/all_books/recommended');
+                                     },
                                      child: Row(
                                        children: [
                                          Text('See All', style: TextStyle(color: const Color(0xFFB062FF), fontSize: context.responsive.sp(13))),
@@ -172,7 +175,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                            asyncValue: trendingBooks, 
                            builder: (data) => Padding(
                              padding: EdgeInsets.only(bottom: context.responsive.sp(32)),
-                             child: HorizontalBookList(title: 'Trending This Week', books: data, showBadges: true),
+                             child: HorizontalBookList(
+                                title: 'Trending This Week', 
+                                books: data, 
+                                showBadges: true,
+                                onViewAll: () => context.push('/all_books/trending'),
+                             ),
                            )
                         )
                      ),
@@ -183,7 +191,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                            asyncValue: libraryBooks, 
                            builder: (data) => Padding(
                              padding: EdgeInsets.only(bottom: context.responsive.sp(32)),
-                             child: HorizontalBookList(title: 'Your Library', books: data, showsAuthor: false),
+                             child: HorizontalBookList(
+                                title: 'Your Library', 
+                                books: data, 
+                                showsAuthor: false,
+                                onViewAll: () {
+                                   setState(() => _currentIndex = 1); // Switch to Library Tab
+                                },
+                             ),
                            )
                         )
                      ),

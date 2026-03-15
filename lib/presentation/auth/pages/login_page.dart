@@ -107,7 +107,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton(
-                           onPressed: () {},
+                           onPressed: () {
+                             context.push('/forgot_password');
+                           },
                            style: TextButton.styleFrom(
                              padding: EdgeInsets.zero,
                              minimumSize: const Size(0, 0),
@@ -151,27 +153,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         text: 'Continue with Google',
                         icon: _buildIcon('G', Colors.redAccent, context), 
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Google Sign-In coming soon!')),
-                          );
+                          context.go('/home');
                         },
                       ),
                       SocialAuthButton(
                         text: 'Continue with Apple',
                         icon: Icon(Icons.apple, color: Colors.white, size: context.responsive.sp(20)),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Apple Sign-In coming soon!')),
-                          );
+                          context.go('/home');
                         },
                       ),
                       SocialAuthButton(
                         text: 'Continue with Phone',
                         icon: Icon(Icons.phone_outlined, color: Colors.white, size: context.responsive.sp(20)),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Phone Sign-In coming soon!')),
-                          );
+                          context.go('/home');
                         },
                       ),
 

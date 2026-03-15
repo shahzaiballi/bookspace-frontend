@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/entities/library_book_entity.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import 'package:go_router/go_router.dart';
+import '../controllers/library_state_provider.dart';
 
-class LibraryBookCard extends StatelessWidget {
+class LibraryBookCard extends ConsumerWidget {
   final LibraryBookEntity book;
 
   const LibraryBookCard({super.key, required this.book});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref.watch(favoriteBooksProvider).contains(book.id);
+
     return GestureDetector(
       onTap: () => context.push('/book_detail/${book.id}'),
       child: Container(
@@ -49,8 +53,32 @@ class LibraryBookCard extends StatelessWidget {
                              overflow: TextOverflow.ellipsis,
                            ),
                          ),
-                         if (book.isFavorite)
-                           Icon(Icons.favorite, color: Colors.redAccent, size: context.responsive.sp(16)),
+                         Row(
+                           mainAxisSize: MainAxisSize.min,
+                           children: [
+                             GestureDetector(
+                               onTap: () {
+                                 ref.read(favoriteBooksProvider.notifier).toggleFavorite(book.id);
+                               },
+                               child: Icon(
+                                 isFavorite ? Icons.favorite : Icons.favorite_border,
+                                 color: isFavorite ? Colors.redAccent : Colors.white54,
+                                 size: context.responsive.sp(20)
+                               ),
+                             ),
+                             SizedBox(width: context.responsive.wp(12)),
+                             GestureDetector(
+                               onTap: () {
+                                 _showDeleteConfirm(context, ref);
+                               },
+                               child: Icon(
+                                 Icons.delete_outline,
+                                 color: Colors.white54,
+                                 size: context.responsive.sp(20)
+                               ),
+                             ),
+                           ],
+                         )
                       ],
                    ),
                    SizedBox(height: context.responsive.sp(4)),
@@ -78,11 +106,60 @@ class LibraryBookCard extends StatelessWidget {
                         minHeight: context.responsive.sp(5),
                       ),
                    ),
+                   SizedBox(height: context.responsive.sp(8)),
+                   Align(
+                     alignment: Alignment.centerRight,
+                     child: TextButton(
+                       onPressed: () => context.push('/book_detail/${book.id}'),
+                       style: TextButton.styleFrom(
+                         padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(12), vertical: context.responsive.sp(4)),
+                         minimumSize: Size.zero,
+                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                       ),
+                       child: Text(
+                         'Details',
+                         style: TextStyle(color: const Color(0xFFB062FF), fontSize: context.responsive.sp(12), fontWeight: FontWeight.bold),
+                       ),
+                     ),
+                   )
                 ],
              )
           )
         ],
       )
+      ),
+    );
+  }
+
+  void _showDeleteConfirm(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E233D),
+        title: const Text('Remove Book', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to remove this book from your library?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(deletedBooksProvider.notifier).deleteBook(book.id);
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Removed from Library'),
+                  backgroundColor: Color(0xFF1E233D),
+                ),
+              );
+            },
+            child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
       ),
     );
   }

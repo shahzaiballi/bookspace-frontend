@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added import for Riv
 import '../../presentation/onboarding/pages/onboarding_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
+import '../../presentation/auth/pages/forgot_password_page.dart';
+import '../../presentation/auth/pages/otp_verification_page.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/home/pages/all_books_page.dart';
 import '../../presentation/book_detail/pages/book_detail_page.dart';
 import '../../presentation/chapters/pages/chapter_list_page.dart';
 import '../../presentation/discussions/pages/discussion_detail_page.dart'; 
 import '../../presentation/discussions/pages/new_discussion_page.dart';
-import '../../presentation/profile/pages/reading_plan_page.dart'; // Added import
+import '../../presentation/profile/pages/reading_plan_page.dart';
 import '../../presentation/book_summary/pages/chapter_summary_page.dart';
+import '../../presentation/chunked_reading/pages/chunked_reading_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -41,9 +45,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
+        path: '/forgot_password',
+        name: 'forgot_password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/verify_otp',
+        name: 'verify_otp',
+        builder: (context, state) => const OtpVerificationPage(),
+      ),
+      GoRoute(
         path: '/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/all_books/:category',
+        name: 'all_books',
+        builder: (context, state) {
+          final category = state.pathParameters['category']!;
+          return AllBooksPage(category: category);
+        },
       ),
       GoRoute(
         path: '/chapters/:id',
@@ -86,6 +108,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
          path: '/reading_plan',
          name: 'reading_plan',
          builder: (context, state) => const ReadingPlanPage(),
+      ),
+      GoRoute(
+        path: '/read/:bookId/:chapterId',
+        name: 'chunked_reading',
+        builder: (context, state) {
+          final bookId = state.pathParameters['bookId']!;
+          final chapterId = state.pathParameters['chapterId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final initialChunkIndex = extra?['initialChunkIndex'] as int? ?? 0;
+          
+          return ChunkedReadingScreen(
+            bookId: bookId, 
+            chapterId: chapterId,
+            initialChunkIndex: initialChunkIndex,
+          );
+        },
       ),
     ],
   );

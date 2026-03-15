@@ -86,7 +86,7 @@ class BookDetailPage extends ConsumerWidget {
                           ),
                           child: PrimaryButton(
                             text: 'Continue Reading',
-                            onPressed: () {},
+                            onPressed: () => context.push('/chapters/${book.id}'),
                           )
                        )
                      ],

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/mock_library_repository.dart';
 import '../../../domain/entities/library_book_entity.dart';
 import '../../../domain/repositories/library_repository.dart';
+import 'library_state_provider.dart';
 
 // Provider for the Data layer Repository
 final libraryRepositoryProvider = Provider<LibraryRepository>((ref) {
@@ -21,16 +22,24 @@ final rawLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) {
 final filteredLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) async {
   final allBooks = await ref.watch(rawLibraryProvider.future);
   final filterIndex = ref.watch(libraryFilterProvider);
+  final favoriteIds = ref.watch(favoriteBooksProvider);
+  final deletedIds = ref.watch(deletedBooksProvider);
+
+  // Apply deletions and map dynamic favorites
+  var activeBooks = allBooks
+      .where((book) => !deletedIds.contains(book.id))
+      .map((book) => book.copyWith(isFavorite: favoriteIds.contains(book.id) || book.isFavorite))
+      .toList();
 
   switch (filterIndex) {
     case 1: // Favorites
-      return allBooks.where((book) => book.isFavorite).toList();
+      return activeBooks.where((book) => book.isFavorite || favoriteIds.contains(book.id)).toList();
     case 2: // In Progress
-      return allBooks.where((book) => book.status == LibraryStatus.inProgress).toList();
+      return activeBooks.where((book) => book.status == LibraryStatus.inProgress).toList();
     case 3: // Completed
-      return allBooks.where((book) => book.status == LibraryStatus.completed).toList();
+      return activeBooks.where((book) => book.status == LibraryStatus.completed).toList();
     case 0: // All Books
     default:
-      return allBooks;
+      return activeBooks;
   }
 });

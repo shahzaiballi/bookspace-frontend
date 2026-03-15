@@ -118,7 +118,7 @@ class CurrentlyReadingCard extends ConsumerWidget {
               minimumSize: const Size(double.infinity, 44),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: () => context.push('/chapters/${progress.bookId}'),
+            onPressed: () => context.push('/read/${progress.bookId}/c4', extra: {'initialChunkIndex': 2}), // c4 is active chapter in mock, mock index 2
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -151,7 +151,9 @@ class CurrentlyReadingCard extends ConsumerWidget {
                     padding: EdgeInsets.symmetric(vertical: context.responsive.sp(12)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.push('/book_summary/${progress.bookId}');
+                  },
                   icon: Icon(Icons.description_outlined, color: Colors.white70, size: context.responsive.sp(16)),
                   label: Text('Summary', style: TextStyle(color: Colors.white70, fontSize: context.responsive.sp(13))),
                 ),

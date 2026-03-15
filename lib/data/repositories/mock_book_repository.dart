@@ -4,6 +4,7 @@ import '../../domain/entities/user_stats_entity.dart';
 import '../../domain/entities/add_book_params.dart';
 import '../../domain/entities/chapter_entity.dart';
 import '../../domain/entities/summary_entity.dart';
+import '../../domain/entities/chunk_entity.dart';
 import '../../domain/repositories/book_repository.dart';
 
 class MockBookRepository implements BookRepository {
@@ -115,6 +116,43 @@ class MockBookRepository implements BookRepository {
       ];
     }
     return []; // Default empty list if bookId doesn't match
+  }
+
+  @override
+  Future<List<ChunkEntity>> getChunks(String bookId, String chapterId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return [
+      ChunkEntity(
+        id: 'chunk_${chapterId}_1',
+        text: 'This is the first chunk of chapter $chapterId for book $bookId. It contains some introductory text that you can read in a couple of minutes. The idea is to make reading more digestible by breaking down the content into manageable pieces.',
+        estimatedMinutes: 2,
+        chunkIndex: 0,
+      ),
+      ChunkEntity(
+        id: 'chunk_${chapterId}_2',
+        text: 'Moving on to the second chunk. Notice how the text is focused and doesn\'t overwhelm the screen. This promotes better retention and a sense of progression as you swipe through the content.',
+        estimatedMinutes: 3,
+        chunkIndex: 1,
+      ),
+      ChunkEntity(
+        id: 'chunk_${chapterId}_3',
+        text: 'Here is the third chunk. By now you should be getting into the flow of reading in small bursts. This method is particularly effective for non-fiction books where you want to absorb key concepts without exhaustion.',
+        estimatedMinutes: 2,
+        chunkIndex: 2,
+      ),
+      ChunkEntity(
+        id: 'chunk_${chapterId}_4',
+        text: 'We are nearing the end of this chapter\'s session. The fourth chunk provides the concluding thoughts before the final wrap-up. Keep going, you are doing great.',
+        estimatedMinutes: 4,
+        chunkIndex: 3,
+      ),
+      ChunkEntity(
+        id: 'chunk_${chapterId}_5',
+        text: 'Final chunk! You have successfully read through the entire chapter chunk by chunk. Once you finish this, you will see a completion screen. Great job!',
+        estimatedMinutes: 2,
+        chunkIndex: 4,
+      ),
+    ];
   }
 
   @override

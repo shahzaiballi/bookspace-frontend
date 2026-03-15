@@ -37,7 +37,13 @@ class ChapterListPage extends ConsumerWidget {
                              decoration: const BoxDecoration(color: Color(0xFF1E233D), shape: BoxShape.circle),
                              child: IconButton(
                                icon: Icon(Icons.arrow_back, color: Colors.white70, size: context.responsive.sp(20)),
-                               onPressed: () => context.pop(),
+                               onPressed: () {
+                                 if (context.canPop()) {
+                                   context.pop();
+                                 } else {
+                                   context.go('/');
+                                 }
+                               },
                              ),
                           ),
                           SizedBox(width: context.responsive.wp(16)),

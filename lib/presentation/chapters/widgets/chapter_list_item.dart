@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../domain/entities/chapter_entity.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -15,6 +16,8 @@ class ChapterListItem extends StatelessWidget {
       return _buildActiveChapter(context);
     } else if (chapter.isCompleted) {
       return _buildCompletedChapter(context);
+    } else if (chapter.isLocked) {
+      return _buildLockedChapter(context);
     } else {
       return _buildUpcomingChapter(context);
     }
@@ -65,9 +68,7 @@ class ChapterListItem extends StatelessWidget {
                  width: double.infinity,
                  child: ElevatedButton(
                     onPressed: () {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Opening ${chapter.title}...')),
-                         );
+                         context.push('/read/$bookId/${chapter.id}');
                     },
                     style: ElevatedButton.styleFrom(
                        backgroundColor: Colors.transparent,
@@ -123,40 +124,58 @@ class ChapterListItem extends StatelessWidget {
     );
   }
 
+  Widget _buildLockedChapter(BuildContext context) {
+    return _buildStandardRow(
+      iconWidget: _buildIconBox(Icons.lock_outline, Colors.white38, context),
+      titleColor: Colors.white38,
+      context: context,
+    );
+  }
+
   // Shared row style for completed and upcoming
   Widget _buildStandardRow({required Widget iconWidget, required Color titleColor, required BuildContext context}) {
-     return Container(
-       margin: EdgeInsets.only(bottom: context.responsive.sp(12)),
-       padding: EdgeInsets.all(context.responsive.sp(16)),
-       decoration: BoxDecoration(
-          color: const Color(0xFF1E233D),
-          borderRadius: BorderRadius.circular(context.responsive.sp(12)),
-       ),
-       child: Row(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-            iconWidget,
-            SizedBox(width: context.responsive.wp(16)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   Text(
-                     'Chapter ${chapter.chapterNumber}: ${chapter.title}', 
-                     style: TextStyle(color: titleColor, fontSize: context.responsive.sp(13), fontWeight: FontWeight.bold)
-                   ),
-                   SizedBox(height: context.responsive.sp(8)),
-                   Row(
-                      children: [
-                         Icon(Icons.schedule, color: Colors.white54, size: context.responsive.sp(12)),
-                         SizedBox(width: context.responsive.wp(4)),
-                         Text('${chapter.durationInMinutes} min  •  ${chapter.pageRange}', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(11))),
-                      ],
-                   )
-                ],
-              ),
-            )
-         ],
+     return InkWell(
+       onTap: () {
+         if (chapter.isLocked) {
+             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('This chapter is currently locked.')));
+         } else {
+             context.push('/read/$bookId/${chapter.id}');
+         }
+       },
+       borderRadius: BorderRadius.circular(context.responsive.sp(12)),
+       child: Container(
+         margin: EdgeInsets.only(bottom: context.responsive.sp(12)),
+         padding: EdgeInsets.all(context.responsive.sp(16)),
+         decoration: BoxDecoration(
+            color: const Color(0xFF1E233D),
+            borderRadius: BorderRadius.circular(context.responsive.sp(12)),
+         ),
+         child: Row(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+              iconWidget,
+              SizedBox(width: context.responsive.wp(16)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     Text(
+                       'Chapter ${chapter.chapterNumber}: ${chapter.title}', 
+                       style: TextStyle(color: titleColor, fontSize: context.responsive.sp(13), fontWeight: FontWeight.bold)
+                     ),
+                     SizedBox(height: context.responsive.sp(8)),
+                     Row(
+                        children: [
+                           Icon(Icons.schedule, color: Colors.white54, size: context.responsive.sp(12)),
+                           SizedBox(width: context.responsive.wp(4)),
+                           Text('${chapter.durationInMinutes} min  •  ${chapter.pageRange}', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(11))),
+                        ],
+                     )
+                  ],
+                ),
+              )
+           ],
+         ),
        ),
      );
   }
