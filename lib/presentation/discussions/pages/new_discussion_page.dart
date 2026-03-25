@@ -4,7 +4,9 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../auth/widgets/custom_text_field.dart';
 
 class NewDiscussionPage extends StatefulWidget {
-  const NewDiscussionPage({super.key});
+  final String? initialText;
+
+  const NewDiscussionPage({super.key, this.initialText});
 
   @override
   State<NewDiscussionPage> createState() => _NewDiscussionPageState();
@@ -17,6 +19,14 @@ class _NewDiscussionPageState extends State<NewDiscussionPage> {
   final TextEditingController _thoughtsController = TextEditingController();
   
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialText != null) {
+      _thoughtsController.text = widget.initialText!;
+    }
+  }
 
   @override
   void dispose() {

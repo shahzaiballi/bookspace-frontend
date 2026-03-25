@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
+import 'core/services/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Need to pre-fetch SharedPreferences for synchronous checking in AppRouter
+  final prefs = await SharedPreferences.getInstance();
+  
+  // Initialize ProviderContainer to safely init the service before runApp 
+  // and inject sharedPreferences override
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+  );
+  await container.read(notificationServiceProvider).init();
+
   runApp(
-    const ProviderScope(
-      child: ReadifyApp(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const ReadifyApp(),
     ),
   );
 }

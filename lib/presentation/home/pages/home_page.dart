@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/responsive_utils.dart';
+import '../../../core/services/notification_service.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/currently_reading_card.dart';
 import '../widgets/insights_grid.dart';
@@ -21,6 +22,16 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final notifService = ref.read(notificationServiceProvider);
+      notifService.requestPermissions();
+      notifService.scheduleDailyReminders();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +104,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                            ],
                          ),
                        ),
+                       actions: [
+                         IconButton(
+                           icon: Icon(Icons.search, color: Colors.white, size: context.responsive.sp(28)),
+                           onPressed: () {
+                             context.push('/search');
+                           },
+                         ),
+                         SizedBox(width: context.responsive.wp(8)),
+                       ],
                        toolbarHeight: context.responsive.sp(80),
                      ),
                      

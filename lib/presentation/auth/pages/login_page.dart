@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../controllers/auth_controller.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/social_auth_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -29,6 +31,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     ref.read(authControllerProvider.notifier).login(email, password);
+  }
+
+  void _handleGoogleSignIn() async {
+    try {
+      final googleSignInInstance = GoogleSignIn(scopes: ['email', 'profile']);
+      final account = await googleSignInInstance.signIn();
+      
+      if (account != null && mounted) {
+        // Since it's MVP, we'll mock the internal Google login session 
+        // to sync with our Riverpod Authentication state which naturally triggers the router redirect.
+        await ref.read(authControllerProvider.notifier).login(account.email, 'google_mock_password');
+      } else {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                 content: Text('Google Sign-In cancelled or failed.', style: TextStyle(color: Colors.white)),
+                 backgroundColor: Color(0xFF1E152A),
+              ),
+           );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+               content: Text('Google Sign-In cancelled or failed.', style: TextStyle(color: Colors.white)),
+               backgroundColor: Color(0xFF1E152A),
+            ),
+         );
+      }
+    }
   }
 
   @override
@@ -152,9 +185,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       SocialAuthButton(
                         text: 'Continue with Google',
                         icon: _buildIcon('G', Colors.redAccent, context), 
-                        onPressed: () {
-                          context.go('/home');
-                        },
+                        onPressed: _handleGoogleSignIn,
                       ),
                       SocialAuthButton(
                         text: 'Continue with Apple',

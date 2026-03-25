@@ -138,7 +138,9 @@ class CurrentlyReadingCard extends ConsumerWidget {
                     padding: EdgeInsets.symmetric(vertical: context.responsive.sp(12)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.push('/flashcards/${progress.bookId}');
+                  },
                   icon: Icon(Icons.style_outlined, color: Colors.white70, size: context.responsive.sp(16)),
                   label: Text('Flashcards', style: TextStyle(color: Colors.white70, fontSize: context.responsive.sp(13))),
                 ),

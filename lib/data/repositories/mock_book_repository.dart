@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/book_entity.dart';
 import '../../domain/entities/book_detail_entity.dart';
 import '../../domain/entities/user_stats_entity.dart';
@@ -5,6 +6,7 @@ import '../../domain/entities/add_book_params.dart';
 import '../../domain/entities/chapter_entity.dart';
 import '../../domain/entities/summary_entity.dart';
 import '../../domain/entities/chunk_entity.dart';
+import '../../domain/entities/flashcard_entity.dart';
 import '../../domain/repositories/book_repository.dart';
 
 class MockBookRepository implements BookRepository {
@@ -13,16 +15,80 @@ class MockBookRepository implements BookRepository {
     await Future.delayed(const Duration(milliseconds: 600));
     if (bookId == 'b_1' || bookId == 'b_trending_1') {
       return const [
-        ChapterEntity(id: 'c1', title: 'The Surprising Power of Atomic Habits', chapterNumber: 1, durationInMinutes: 18, pageRange: 'Pages 15-25', isCompleted: true),
-        ChapterEntity(id: 'c2', title: 'How Your Habits Shape Your Identity', chapterNumber: 2, durationInMinutes: 22, pageRange: 'Pages 26-42', isCompleted: true),
-        ChapterEntity(id: 'c3', title: 'How to Build Better Habits in 4 Simple Steps', chapterNumber: 3, durationInMinutes: 25, pageRange: 'Pages 43-65', isCompleted: true),
-        ChapterEntity(id: 'c4', title: 'The Man Who Didn\'t Look Right', chapterNumber: 4, durationInMinutes: 20, pageRange: 'Pages 66-82', isActive: true),
-        ChapterEntity(id: 'c5', title: 'The Best Way to Start a New Habit', chapterNumber: 5, durationInMinutes: 24, pageRange: 'Pages 83-105'),
-        ChapterEntity(id: 'c6', title: 'Motivation is Overrated; Environment Often Matters More', chapterNumber: 6, durationInMinutes: 28, pageRange: 'Pages 106-132'),
-        ChapterEntity(id: 'c7', title: 'The Secret to Self-Control', chapterNumber: 7, durationInMinutes: 21, pageRange: 'Pages 133-150'),
-        ChapterEntity(id: 'c8', title: 'How to Make a Habit Irresistible', chapterNumber: 8, durationInMinutes: 26, pageRange: 'Pages 151-175'),
-        ChapterEntity(id: 'c9', title: 'The Role of Family and Friends in Shaping Your Habits', chapterNumber: 9, durationInMinutes: 22, pageRange: 'Pages 176-195'),
-        ChapterEntity(id: 'c10', title: 'How to Find and Fix the Causes of Your Bad Habits', chapterNumber: 10, durationInMinutes: 25, pageRange: 'Pages 196-218'),
+        ChapterEntity(
+          id: 'c1',
+          title: 'The Surprising Power of Atomic Habits',
+          chapterNumber: 1,
+          durationInMinutes: 18,
+          pageRange: 'Pages 15-25',
+          isCompleted: true,
+        ),
+        ChapterEntity(
+          id: 'c2',
+          title: 'How Your Habits Shape Your Identity',
+          chapterNumber: 2,
+          durationInMinutes: 22,
+          pageRange: 'Pages 26-42',
+          isCompleted: true,
+        ),
+        ChapterEntity(
+          id: 'c3',
+          title: 'How to Build Better Habits in 4 Simple Steps',
+          chapterNumber: 3,
+          durationInMinutes: 25,
+          pageRange: 'Pages 43-65',
+          isCompleted: true,
+        ),
+        ChapterEntity(
+          id: 'c4',
+          title: 'The Man Who Didn\'t Look Right',
+          chapterNumber: 4,
+          durationInMinutes: 20,
+          pageRange: 'Pages 66-82',
+          isActive: true,
+        ),
+        ChapterEntity(
+          id: 'c5',
+          title: 'The Best Way to Start a New Habit',
+          chapterNumber: 5,
+          durationInMinutes: 24,
+          pageRange: 'Pages 83-105',
+        ),
+        ChapterEntity(
+          id: 'c6',
+          title: 'Motivation is Overrated; Environment Often Matters More',
+          chapterNumber: 6,
+          durationInMinutes: 28,
+          pageRange: 'Pages 106-132',
+        ),
+        ChapterEntity(
+          id: 'c7',
+          title: 'The Secret to Self-Control',
+          chapterNumber: 7,
+          durationInMinutes: 21,
+          pageRange: 'Pages 133-150',
+        ),
+        ChapterEntity(
+          id: 'c8',
+          title: 'How to Make a Habit Irresistible',
+          chapterNumber: 8,
+          durationInMinutes: 26,
+          pageRange: 'Pages 151-175',
+        ),
+        ChapterEntity(
+          id: 'c9',
+          title: 'The Role of Family and Friends in Shaping Your Habits',
+          chapterNumber: 9,
+          durationInMinutes: 22,
+          pageRange: 'Pages 176-195',
+        ),
+        ChapterEntity(
+          id: 'c10',
+          title: 'How to Find and Fix the Causes of Your Bad Habits',
+          chapterNumber: 10,
+          durationInMinutes: 25,
+          pageRange: 'Pages 196-218',
+        ),
       ];
     } else {
       // Find the original book entity to verify existence
@@ -30,7 +96,7 @@ class MockBookRepository implements BookRepository {
       // For now, we'll simulate a generic list.
       // final allBooks = await getRecommendations();
       // final _ = allBooks.firstWhere((b) => b.id == bookId, orElse: () => allBooks.first);
-      
+
       // Simulating chapters list based on bookId
       return List.generate(
         10, // Assuming 10 chapters
@@ -41,7 +107,8 @@ class MockBookRepository implements BookRepository {
           durationInMinutes: 15 + (index % 5),
           pageRange: '${(index * 20) + 1} - ${(index + 1) * 20}',
           isCompleted: index < 3, // First 3 completed
-          isActive: index == 3,  // 4th is current (renamed from isCurrent to isActive)
+          isActive:
+              index == 3, // 4th is current (renamed from isCurrent to isActive)
           // isLocked: index > 3,    // Rest are locked (ChapterEntity doesn't have isLocked)
         ),
       );
@@ -51,19 +118,21 @@ class MockBookRepository implements BookRepository {
   @override
   Future<List<SummaryEntity>> getChapterSummaries(String bookId) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    
+
     // Specific mock data designed precisely around image_375238.png
-    if (bookId == '1' || true) { // Fallback true to ensure template works perfectly everywhere initially
+    if (bookId == '1' || bookId.isNotEmpty) {
+      // Fallback true to ensure template works perfectly everywhere initially
       return [
         const SummaryEntity(
           id: 's1',
           chapterNumber: 1,
           title: 'The Surprising Power of Atomic Habits',
-          summaryContent: 'Small habits make a meaningful difference by broadening the scope to focus on systems rather than specific goals. Over time, these 1% improvements compound into remarkable results.',
+          summaryContent:
+              'Small habits make a meaningful difference by broadening the scope to focus on systems rather than specific goals. Over time, these 1% improvements compound into remarkable results.',
           keyTakeaways: [
-             'Focus on systems, not on goals',
-             'Habits are the compound interest of self-improvement',
-             'A 1% improvement every day yields huge results over a year'
+            'Focus on systems, not on goals',
+            'Habits are the compound interest of self-improvement',
+            'A 1% improvement every day yields huge results over a year',
           ],
           isLocked: false,
         ),
@@ -71,11 +140,12 @@ class MockBookRepository implements BookRepository {
           id: 's2',
           chapterNumber: 2,
           title: 'How Your Habits Shape Your Identity',
-          summaryContent: 'There are three levels of change: outcome change, process change, and identity change. The most effective way to change your habits is to focus not on what you want to achieve, but on who you wish to become.',
+          summaryContent:
+              'There are three levels of change: outcome change, process change, and identity change. The most effective way to change your habits is to focus not on what you want to achieve, but on who you wish to become.',
           keyTakeaways: [
-             'Focus on who you wish to become, not what you want to achieve',
-             'Your identity emerges out of your habits',
-             'Every action is a vote for the type of person you wish to become'
+            'Focus on who you wish to become, not what you want to achieve',
+            'Your identity emerges out of your habits',
+            'Every action is a vote for the type of person you wish to become',
           ],
           isLocked: false,
         ),
@@ -83,11 +153,12 @@ class MockBookRepository implements BookRepository {
           id: 's3',
           chapterNumber: 3,
           title: 'How to Build Better Habits in 4 Simple Steps',
-          summaryContent: 'The habit loop consists of Cue, Craving, Response, and Reward. Mastering these four steps is essential to forming robust, unbreakable habits.',
+          summaryContent:
+              'The habit loop consists of Cue, Craving, Response, and Reward. Mastering these four steps is essential to forming robust, unbreakable habits.',
           keyTakeaways: [
-             'Cue triggers your brain to initiate a behavior',
-             'Craving is the motivational force',
-             'Response is the actual habit you perform'
+            'Cue triggers your brain to initiate a behavior',
+            'Craving is the motivational force',
+            'Response is the actual habit you perform',
           ],
           isLocked: false,
         ),
@@ -95,10 +166,11 @@ class MockBookRepository implements BookRepository {
           id: 's4',
           chapterNumber: 4,
           title: 'The Man Who Didn\'t Look Right',
-          summaryContent: 'Our brain is constantly predicting outcomes based on past experiences. Sometimes we internalize cues so deeply they become invisible to us.',
+          summaryContent:
+              'Our brain is constantly predicting outcomes based on past experiences. Sometimes we internalize cues so deeply they become invisible to us.',
           keyTakeaways: [
-             'Awareness is the first step to changing a habit',
-             'Use a Habits Scorecard to map out your daily routines'
+            'Awareness is the first step to changing a habit',
+            'Use a Habits Scorecard to map out your daily routines',
           ],
           isLocked: true, // Example locked
         ),
@@ -106,10 +178,11 @@ class MockBookRepository implements BookRepository {
           id: 's5',
           chapterNumber: 5,
           title: 'The Best Way to Start a New Habit',
-          summaryContent: 'Implementation Intentions are critical. By explicitly stating When and Where you will perform a habit, you significantly increase your odds of success.',
+          summaryContent:
+              'Implementation Intentions are critical. By explicitly stating When and Where you will perform a habit, you significantly increase your odds of success.',
           keyTakeaways: [
-             'Use the formula: I will [BEHAVIOR] at [TIME] in [LOCATION]',
-             'Habit stacking pairs a new habit with a current one'
+            'Use the formula: I will [BEHAVIOR] at [TIME] in [LOCATION]',
+            'Habit stacking pairs a new habit with a current one',
           ],
           isLocked: true, // Example locked
         ),
@@ -124,31 +197,36 @@ class MockBookRepository implements BookRepository {
     return [
       ChunkEntity(
         id: 'chunk_${chapterId}_1',
-        text: 'This is the first chunk of chapter $chapterId for book $bookId. It contains some introductory text that you can read in a couple of minutes. The idea is to make reading more digestible by breaking down the content into manageable pieces.',
+        text:
+            'This is the first chunk of chapter $chapterId for book $bookId. It contains some introductory text that you can read in a couple of minutes. The idea is to make reading more digestible by breaking down the content into manageable pieces.',
         estimatedMinutes: 2,
         chunkIndex: 0,
       ),
       ChunkEntity(
         id: 'chunk_${chapterId}_2',
-        text: 'Moving on to the second chunk. Notice how the text is focused and doesn\'t overwhelm the screen. This promotes better retention and a sense of progression as you swipe through the content.',
+        text:
+            'Moving on to the second chunk. Notice how the text is focused and doesn\'t overwhelm the screen. This promotes better retention and a sense of progression as you swipe through the content.',
         estimatedMinutes: 3,
         chunkIndex: 1,
       ),
       ChunkEntity(
         id: 'chunk_${chapterId}_3',
-        text: 'Here is the third chunk. By now you should be getting into the flow of reading in small bursts. This method is particularly effective for non-fiction books where you want to absorb key concepts without exhaustion.',
+        text:
+            'Here is the third chunk. By now you should be getting into the flow of reading in small bursts. This method is particularly effective for non-fiction books where you want to absorb key concepts without exhaustion.',
         estimatedMinutes: 2,
         chunkIndex: 2,
       ),
       ChunkEntity(
         id: 'chunk_${chapterId}_4',
-        text: 'We are nearing the end of this chapter\'s session. The fourth chunk provides the concluding thoughts before the final wrap-up. Keep going, you are doing great.',
+        text:
+            'We are nearing the end of this chapter\'s session. The fourth chunk provides the concluding thoughts before the final wrap-up. Keep going, you are doing great.',
         estimatedMinutes: 4,
         chunkIndex: 3,
       ),
       ChunkEntity(
         id: 'chunk_${chapterId}_5',
-        text: 'Final chunk! You have successfully read through the entire chapter chunk by chunk. Once you finish this, you will see a completion screen. Great job!',
+        text:
+            'Final chunk! You have successfully read through the entire chapter chunk by chunk. Once you finish this, you will see a completion screen. Great job!',
         estimatedMinutes: 2,
         chunkIndex: 4,
       ),
@@ -156,13 +234,55 @@ class MockBookRepository implements BookRepository {
   }
 
   @override
+  Future<List<FlashcardEntity>> getFlashcards(String bookId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return [
+      FlashcardEntity(
+        id: 'fc_1',
+        bookId: bookId,
+        question: 'What is the "Compound Interest" of self-improvement?',
+        answer:
+            'Habits. A 1% improvement everyday yields huge results over a year.',
+      ),
+      FlashcardEntity(
+        id: 'fc_2',
+        bookId: bookId,
+        question: 'What is the most effective way to change your habits?',
+        answer:
+            'Focus not on what you want to achieve, but on WHO you wish to become.',
+      ),
+      FlashcardEntity(
+        id: 'fc_3',
+        bookId: bookId,
+        question: 'What are the 4 simple steps to build better habits?',
+        answer: 'Cue, Craving, Response, and Reward.',
+      ),
+      FlashcardEntity(
+        id: 'fc_4',
+        bookId: bookId,
+        question: 'What is an "Implementation Intention"?',
+        answer:
+            'A plan you make beforehand about when and where to act. Formula: I will [BEHAVIOR] at [TIME] in [LOCATION].',
+      ),
+      FlashcardEntity(
+        id: 'fc_5',
+        bookId: bookId,
+        question:
+            'What plays a bigger role in habit formation: Motivation or Environment?',
+        answer:
+            'Environment often matters more. Make the cues of good habits obvious, and bad habits invisible.',
+      ),
+    ];
+  }
+
+  @override
   Future<void> addBook(AddBookParams params) async {
     await Future.delayed(const Duration(milliseconds: 1500));
-    print('------- Mock Book Added -------');
-    print('Title: ${params.title}');
-    print('Author: ${params.author}');
-    print('ISBN: ${params.isbn ?? "None provided"}');
-    print('-------------------------------');
+    debugPrint('------- Mock Book Added -------');
+    debugPrint('Title: ${params.title}');
+    debugPrint('Author: ${params.author}');
+    debugPrint('ISBN: ${params.isbn ?? "None provided"}');
+    debugPrint('-------------------------------');
   }
 
   @override
@@ -176,7 +296,8 @@ class MockBookRepository implements BookRepository {
       readersCount: '3M',
       category: 'Self-Improvement',
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg',
-      description: 'An easy & proven way to build good habits & break bad ones.',
+      description:
+          'An easy & proven way to build good habits & break bad ones.',
       totalChapters: 10,
       progressPercent: 65,
       daysLeftToFinish: 3,
@@ -193,7 +314,8 @@ class MockBookRepository implements BookRepository {
       bookId: 'b_1',
       title: 'Atomic Habits',
       author: 'James Clear',
-      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg', // Placeholder cover
+      imageUrl:
+          'https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg', // Placeholder cover
       progressPercent: 65,
     );
   }
@@ -251,12 +373,13 @@ class MockBookRepository implements BookRepository {
       BookEntity(
         id: 't_1',
         title: 'Deep Work',
-        author: 'Cal Newport', // Figma says Mark Manson but cover implies Deep Work. Using generic
+        author:
+            'Cal Newport', // Figma says Mark Manson but cover implies Deep Work. Using generic
         rating: 4.7,
         readersCount: '1.1M',
         category: 'Productivity',
         badge: '#1',
-        imageUrl: 'https://covers.openlibrary.org/b/isbn/9781455586691-L.jpg', 
+        imageUrl: 'https://covers.openlibrary.org/b/isbn/9781455586691-L.jpg',
       ),
       BookEntity(
         id: 't_2',
@@ -285,14 +408,14 @@ class MockBookRepository implements BookRepository {
   Future<List<BookEntity>> getLibraryBooks() async {
     await Future.delayed(const Duration(milliseconds: 900));
     return const [
-       BookEntity(
+      BookEntity(
         id: 'l_1',
         title: 'Deep Work',
-        author: 'Cal Newport', 
+        author: 'Cal Newport',
         rating: 4.7,
         readersCount: '1.1M',
         category: 'Productivity',
-        imageUrl: 'https://covers.openlibrary.org/b/isbn/9781455586691-L.jpg', 
+        imageUrl: 'https://covers.openlibrary.org/b/isbn/9781455586691-L.jpg',
       ),
       BookEntity(
         id: 'l_2',

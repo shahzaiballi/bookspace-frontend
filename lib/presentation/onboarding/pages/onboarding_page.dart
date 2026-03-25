@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/navigation/app_router.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../controllers/onboarding_controller.dart';
 import '../widgets/onboarding_button.dart';
@@ -64,6 +65,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               padding: const EdgeInsets.only(right: 8.0),
                               child: TextButton(
                                 onPressed: () {
+                                  ref.read(sharedPreferencesProvider).setBool('isFirstTime', false);
                                   context.go('/login');
                                 },
                                 child: Text('Skip', style: TextStyle(color: Colors.white70, fontSize: context.responsive.sp(14))),
@@ -180,6 +182,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                           icon: currentIndex == items.length - 1 ? null : Icons.chevron_right,
                                           onPressed: () {
                                              if (currentIndex == items.length - 1) {
+                                                ref.read(sharedPreferencesProvider).setBool('isFirstTime', false);
                                                 context.go('/login');
                                              } else {
                                                 _pageController.nextPage(

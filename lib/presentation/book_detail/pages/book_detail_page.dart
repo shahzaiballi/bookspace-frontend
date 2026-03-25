@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/responsive_utils.dart';
@@ -48,14 +49,14 @@ class BookDetailPage extends ConsumerWidget {
                                   subtitle: 'Track your daily progress',
                                   icon: Icons.track_changes,
                                   iconColor: const Color(0xFFB062FF),
-                                  onTap: () {},
+                                  onTap: () => context.push('/reading_plan'),
                                ),
                                QuickActionCard(
                                   title: 'Flashcards',
                                   subtitle: 'Review key concepts',
                                   icon: Icons.style,
                                   iconColor: const Color(0xFF4A90E2),
-                                  onTap: () {},
+                                  onTap: () => context.push('/flashcards/${book.id}'),
                                ),
                                QuickActionCard(
                                   title: 'Summary',
@@ -70,7 +71,7 @@ class BookDetailPage extends ConsumerWidget {
                                   icon: Icons.chat_bubble_outline,
                                   iconColor: const Color(0xFFE83E8C),
                                   hasNotification: true,
-                                  onTap: () {},
+                                  onTap: () => context.push('/all_discussions?bookId=${book.id}'),
                                ),
                              ],
                            ),

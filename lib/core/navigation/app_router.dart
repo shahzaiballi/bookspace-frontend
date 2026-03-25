@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added import for Riverpod
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
+import '../../presentation/auth/controllers/auth_controller.dart';
 import '../../presentation/onboarding/pages/onboarding_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
@@ -10,24 +14,80 @@ import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/home/pages/all_books_page.dart';
 import '../../presentation/book_detail/pages/book_detail_page.dart';
 import '../../presentation/chapters/pages/chapter_list_page.dart';
-import '../../presentation/discussions/pages/discussion_detail_page.dart'; 
+import '../../presentation/discussions/pages/discussion_detail_page.dart';
+import '../../presentation/discussions/pages/discussions_page.dart';
 import '../../presentation/discussions/pages/new_discussion_page.dart';
 import '../../presentation/profile/pages/reading_plan_page.dart';
 import '../../presentation/book_summary/pages/chapter_summary_page.dart';
 import '../../presentation/chunked_reading/pages/chunked_reading_screen.dart';
+import '../../presentation/search/pages/search_page.dart';
+import '../../presentation/flashcards/pages/flashcard_page.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
-final appRouterProvider = Provider<GoRouter>((ref) {
-  // The rootNavigatorKey is already defined globally, so we don't re-initialize it here.
-  // If the intent was to make it local to the provider, the global declaration would be removed.
-  // Sticking to the provided snippet, which seems to re-assign a global key,
-  // but for a `final` key, this would be an error.
-  // Assuming the instruction meant to use the existing global key.
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError(); // Overridden in main.dart
+});
 
-  final GoRouter appRouter = GoRouter(
+// Helper class to listen to Auth changes and refresh GoRouter
+class AuthRefreshListenable extends ChangeNotifier {
+  AuthRefreshListenable(Ref ref) {
+    ref.listen(authControllerProvider, (_, __) => notifyListeners());
+  }
+}
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authControllerProvider);
+  final deepLinkPayload = ref.watch(deepLinkPayloadProvider);
+
+  return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/onboarding',
+
+    // This connects Riverpod's Auth State to GoRouter's redirection engine
+    refreshListenable: AuthRefreshListenable(ref),
+
+    redirect: (context, state) {
+      final bool loggedIn = authState is AsyncData && authState.value != null;
+      final String location = state.matchedLocation;
+
+      final prefs = ref.read(sharedPreferencesProvider);
+      final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+      // FIX: If logged in, push user away from Onboarding/Login to Home
+      if (loggedIn) {
+        if (location == '/onboarding' || location == '/login' || location == '/signup') {
+          return '/home';
+        }
+      } else {
+        // If not logged in and they've already completed onboarding, skip directly to login
+        if (location == '/onboarding' && !isFirstTime) {
+          return '/login';
+        }
+      }
+
+      // Handle Deep Linking (Existing Logic)
+      if (loggedIn && deepLinkPayload != null) {
+        try {
+          final payloadData = jsonDecode(deepLinkPayload);
+          final targetRoute = payloadData['route'] as String?;
+
+          if (targetRoute != null && targetRoute.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (ref.read(deepLinkPayloadProvider) != null) {
+                ref.read(deepLinkPayloadProvider.notifier).state = null;
+              }
+            });
+            return targetRoute;
+          }
+        } catch (e) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(deepLinkPayloadProvider.notifier).state = null;
+          });
+        }
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/onboarding',
@@ -79,7 +139,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/book_detail/:id',
         name: 'book_detail',
         builder: (context, state) {
-          final id = state.pathParameters['id']!; // Changed from bookId to id
+          final id = state.pathParameters['id']!;
           return BookDetailPage(bookId: id);
         },
       ),
@@ -93,7 +153,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/discussions/:id',
-        name: 'discussions', // Added name for the route
+        name: 'discussions',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return DiscussionDetailPage(postId: id);
@@ -102,12 +162,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/new_discussion',
         name: 'new_discussion',
-        builder: (context, state) => const NewDiscussionPage(),
+        builder: (context, state) {
+          final initialText = state.extra as String?;
+          return NewDiscussionPage(initialText: initialText);
+        },
       ),
       GoRoute(
-         path: '/reading_plan',
-         name: 'reading_plan',
-         builder: (context, state) => const ReadingPlanPage(),
+        path: '/all_discussions',
+        name: 'all_discussions',
+        builder: (context, state) {
+          final bookId = state.uri.queryParameters['bookId'];
+          return DiscussionsPage(bookId: bookId);
+        },
+      ),
+      GoRoute(
+        path: '/reading_plan',
+        name: 'reading_plan',
+        builder: (context, state) => const ReadingPlanPage(),
       ),
       GoRoute(
         path: '/read/:bookId/:chapterId',
@@ -115,17 +186,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final bookId = state.pathParameters['bookId']!;
           final chapterId = state.pathParameters['chapterId']!;
-          final extra = state.extra as Map<String, dynamic>?;
-          final initialChunkIndex = extra?['initialChunkIndex'] as int? ?? 0;
-          
+
+          int initialChunkIndex = 0;
+          if (state.extra != null) {
+            initialChunkIndex = (state.extra as Map<String, dynamic>)['initialChunkIndex'] as int? ?? 0;
+          } else if (state.uri.queryParameters.containsKey('index')) {
+            initialChunkIndex = int.tryParse(state.uri.queryParameters['index']!) ?? 0;
+          }
+
           return ChunkedReadingScreen(
-            bookId: bookId, 
+            bookId: bookId,
             chapterId: chapterId,
             initialChunkIndex: initialChunkIndex,
           );
         },
       ),
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(
+        path: '/flashcards/:id',
+        name: 'flashcards',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return FlashcardPage(bookId: id);
+        },
+      ),
     ],
   );
-  return appRouter;
 });

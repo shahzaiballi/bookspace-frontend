@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../domain/entities/add_book_params.dart';
 import '../../auth/widgets/custom_text_field.dart';
-import '../../auth/widgets/primary_button.dart';
 import '../controllers/add_book_controller.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AddBookPage extends ConsumerStatefulWidget {
   const AddBookPage({super.key});
@@ -37,6 +38,34 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
        );
 
        ref.read(addBookControllerProvider.notifier).addBook(params);
+    }
+  }
+
+  void _handleFileUpload() async {
+    // Request permission based on Android Version / Platform
+    final status = await Permission.storage.request();
+    
+    // For Android 13+, photos or media library might be needed instead but storage is a good default check
+    if (status.isGranted || await Permission.photos.request().isGranted) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'epub'],
+      );
+
+      if (result != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('File selected: ${result.files.single.name}'), backgroundColor: Colors.green),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(
+              content: Text('Storage access is required to upload your books', style: TextStyle(color: Colors.white)),
+              backgroundColor: Color(0xFF1E152A),
+           ),
+        );
+      }
     }
   }
 
@@ -86,31 +115,34 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
                ),
 
                // Upload Section
-               Container(
-                 width: double.infinity,
-                 padding: EdgeInsets.all(context.responsive.sp(24)),
-                 decoration: BoxDecoration(
-                    color: const Color(0xFF1E233D), // Matches existing card colors
-                    borderRadius: BorderRadius.circular(context.responsive.sp(16)),
-                    border: Border.all(color: Colors.white10),
-                 ),
-                 child: Column(
-                   children: [
-                      Container(
-                         padding: EdgeInsets.all(context.responsive.sp(16)),
-                         decoration: const BoxDecoration(
-                            color: Color(0xFF381A5D), // Dark purple circle
-                            shape: BoxShape.circle,
-                         ),
-                         child: Icon(Icons.file_upload_outlined, color: const Color(0xFFB062FF), size: context.responsive.sp(24)),
-                      ),
-                      SizedBox(height: context.responsive.sp(16)),
-                      Text('Upload PDF or EPUB', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(16), fontWeight: FontWeight.bold)),
-                      SizedBox(height: context.responsive.sp(8)),
-                      Text('Tap to browse or drag and drop your file', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(12)), textAlign: TextAlign.center),
-                      SizedBox(height: context.responsive.sp(4)),
-                      Text('Supports PDF, EPUB, MOBI up to 50MB', style: TextStyle(color: Colors.white30, fontSize: context.responsive.sp(10)), textAlign: TextAlign.center),
-                   ],
+               GestureDetector(
+                 onTap: _handleFileUpload,
+                 child: Container(
+                   width: double.infinity,
+                   padding: EdgeInsets.all(context.responsive.sp(24)),
+                   decoration: BoxDecoration(
+                      color: const Color(0xFF1E233D), // Matches existing card colors
+                      borderRadius: BorderRadius.circular(context.responsive.sp(16)),
+                      border: Border.all(color: Colors.white10),
+                   ),
+                   child: Column(
+                     children: [
+                        Container(
+                           padding: EdgeInsets.all(context.responsive.sp(16)),
+                           decoration: const BoxDecoration(
+                              color: Color(0xFF381A5D), // Dark purple circle
+                              shape: BoxShape.circle,
+                           ),
+                           child: Icon(Icons.file_upload_outlined, color: const Color(0xFFB062FF), size: context.responsive.sp(24)),
+                        ),
+                        SizedBox(height: context.responsive.sp(16)),
+                        Text('Upload PDF or EPUB', style: TextStyle(color: Colors.white, fontSize: context.responsive.sp(16), fontWeight: FontWeight.bold)),
+                        SizedBox(height: context.responsive.sp(8)),
+                        Text('Tap to browse or drag and drop your file', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(12)), textAlign: TextAlign.center),
+                        SizedBox(height: context.responsive.sp(4)),
+                        Text('Supports PDF, EPUB, MOBI up to 50MB', style: TextStyle(color: Colors.white30, fontSize: context.responsive.sp(10)), textAlign: TextAlign.center),
+                     ],
+                   ),
                  ),
                ),
 

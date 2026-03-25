@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +7,8 @@ import '../controllers/discussion_controller.dart';
 import '../widgets/post_card.dart';
 
 class DiscussionsPage extends ConsumerWidget {
-  const DiscussionsPage({super.key});
+  final String? bookId;
+  const DiscussionsPage({super.key, this.bookId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,18 +71,22 @@ class DiscussionsPage extends ConsumerWidget {
             // Dynamic Post Feed
             Expanded(
                child: postsAsync.when(
-                  data: (posts) {
-                     if (posts.isEmpty) {
-                        return Center(child: Text('No posts found.', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(14))));
-                     }
-                     return ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(20), vertical: context.responsive.sp(8)),
-                        itemCount: posts.length,
-                        itemBuilder: (context, index) {
-                           return PostCard(post: posts[index]);
-                        },
-                     );
-                  },
+                   data: (posts) {
+                      final filteredPosts = bookId != null 
+                          ? posts.where((p) => p.bookId == bookId).toList() 
+                          : posts;
+                          
+                      if (filteredPosts.isEmpty) {
+                         return Center(child: Text('No posts found.', style: TextStyle(color: Colors.white54, fontSize: context.responsive.sp(14))));
+                      }
+                      return ListView.builder(
+                         padding: EdgeInsets.symmetric(horizontal: context.responsive.wp(20), vertical: context.responsive.sp(8)),
+                         itemCount: filteredPosts.length,
+                         itemBuilder: (context, index) {
+                            return PostCard(post: filteredPosts[index]);
+                         },
+                      );
+                   },
                   loading: () => const Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB062FF)))),
                   error: (e, st) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.redAccent))),
                ),
