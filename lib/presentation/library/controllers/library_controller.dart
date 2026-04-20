@@ -1,44 +1,59 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/repositories/mock_library_repository.dart';
+import '../../../data/repositories/library_repository_impl.dart';
 import '../../../domain/entities/library_book_entity.dart';
 import '../../../domain/repositories/library_repository.dart';
 import 'library_state_provider.dart';
 
-// Provider for the Data layer Repository
+// ── Repository Provider ───────────────────────────────────────────────────────
 final libraryRepositoryProvider = Provider<LibraryRepository>((ref) {
-  return MockLibraryRepository();
+  return LibraryRepositoryImpl();
 });
 
-// State provider for the segmented control index (0: All, 1: Favorites, 2: In Progress, 3: Completed)
+// Expose the impl directly for methods not on the abstract interface
+// (toggleFavorite, removeBook, updateProgress)
+final libraryImplProvider = Provider<LibraryRepositoryImpl>((ref) {
+  return LibraryRepositoryImpl();
+});
+
+// ── Filter State ──────────────────────────────────────────────────────────────
+// 0 = All, 1 = Favorites, 2 = In Progress, 3 = Completed
 final libraryFilterProvider = StateProvider<int>((ref) => 0);
 
-// Provides raw library list
+// ── Raw Library List (from API) ───────────────────────────────────────────────
 final rawLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) {
   final repo = ref.watch(libraryRepositoryProvider);
   return repo.getUserLibrary();
 });
 
-// Provides the filtered library list based on the active segmented control index
+// ── Filtered Library (applies UI-level filters + soft deletes) ───────────────
 final filteredLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) async {
   final allBooks = await ref.watch(rawLibraryProvider.future);
   final filterIndex = ref.watch(libraryFilterProvider);
   final favoriteIds = ref.watch(favoriteBooksProvider);
   final deletedIds = ref.watch(deletedBooksProvider);
 
-  // Apply deletions and map dynamic favorites
+  // Apply soft deletes and merge local favorite toggles (optimistic UI)
   var activeBooks = allBooks
       .where((book) => !deletedIds.contains(book.id))
-      .map((book) => book.copyWith(isFavorite: favoriteIds.contains(book.id) || book.isFavorite))
+      .map((book) => book.copyWith(
+            isFavorite: favoriteIds.contains(book.id) || book.isFavorite,
+          ))
       .toList();
 
   switch (filterIndex) {
-    case 1: // Favorites
-      return activeBooks.where((book) => book.isFavorite || favoriteIds.contains(book.id)).toList();
-    case 2: // In Progress
-      return activeBooks.where((book) => book.status == LibraryStatus.inProgress).toList();
-    case 3: // Completed
-      return activeBooks.where((book) => book.status == LibraryStatus.completed).toList();
-    case 0: // All Books
+    case 1:
+      return activeBooks
+          .where((b) => b.isFavorite || favoriteIds.contains(b.id))
+          .toList();
+    case 2:
+      return activeBooks
+          .where((b) => b.status == LibraryStatus.inProgress)
+          .toList();
+    case 3:
+      return activeBooks
+          .where((b) => b.status == LibraryStatus.completed)
+          .toList();
+    case 0:
     default:
       return activeBooks;
   }

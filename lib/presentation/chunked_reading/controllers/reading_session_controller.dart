@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/repositories/book_repository.dart';
-import '../../../data/repositories/mock_book_repository.dart';
+import '../../../data/repositories/book_repository_impl.dart';
 import 'reading_session_state.dart';
 
 // Provide the repository here since we can't easily access the home one from this path level
-final bookRepositoryProvider = Provider<BookRepository>((ref) => MockBookRepository());
+final bookRepositoryProvider = Provider<BookRepository>((ref) => BookRepositoryImpl());
 
 class ReadingSessionParams {
   final String bookId;

@@ -3,18 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/entities/summary_entity.dart';
 import '../../../../domain/entities/book_detail_entity.dart';
 import '../../../../domain/repositories/book_repository.dart';
-import '../../../../data/repositories/mock_book_repository.dart';
+import '../../../../data/repositories/book_repository_impl.dart';
 
-final bookRepositoryProvider = Provider<BookRepository>((ref) => MockBookRepository());
+// ── Repository ────────────────────────────────────────────────────────────────
+final bookRepositoryProvider = Provider<BookRepository>((ref) {
+  return BookRepositoryImpl();
+});
 
-// Fetch basic Book Details for the Header
-final summaryBookProvider = FutureProvider.family.autoDispose<BookDetailEntity, String>((ref, bookId) async {
+// ── Book Header (for the top card on ChapterSummaryPage) ─────────────────────
+final summaryBookProvider = FutureProvider.family
+    .autoDispose<BookDetailEntity, String>((ref, bookId) async {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getBookDetails(bookId);
 });
 
-// AsyncNotifier tracking the actual accordion content list
-class SummaryController extends AutoDisposeFamilyAsyncNotifier<List<SummaryEntity>, String> {
+// ── Chapter Summaries List ────────────────────────────────────────────────────
+class SummaryController
+    extends AutoDisposeFamilyAsyncNotifier<List<SummaryEntity>, String> {
   @override
   FutureOr<List<SummaryEntity>> build(String arg) async {
     final repo = ref.watch(bookRepositoryProvider);
@@ -22,9 +27,10 @@ class SummaryController extends AutoDisposeFamilyAsyncNotifier<List<SummaryEntit
   }
 }
 
-final summaryControllerProvider = AsyncNotifierProvider.autoDispose.family<SummaryController, List<SummaryEntity>, String>(
+final summaryControllerProvider = AsyncNotifierProvider.autoDispose
+    .family<SummaryController, List<SummaryEntity>, String>(
   SummaryController.new,
 );
 
-// Provider tracking which single chapter index is actively expanded
+// ── Accordion Expansion State ─────────────────────────────────────────────────
 final activeExpansionProvider = StateProvider.autoDispose<int?>((ref) => null);

@@ -1,39 +1,37 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/repositories/mock_book_repository.dart';
-import '../../../domain/entities/book_entity.dart';
-import '../../../domain/entities/user_stats_entity.dart';
-import '../../../domain/repositories/book_repository.dart';
+import 'package:readify_app/data/repositories/book_repository_impl.dart';
+import 'package:readify_app/domain/entities/book_entity.dart';
+import 'package:readify_app/domain/entities/user_stats_entity.dart';
+import 'package:readify_app/domain/repositories/book_repository.dart';
 
-// Provider for the Data layer Repository
+// ── Repository Provider ──────────────────────────────────────────────────────
+// Switched from MockBookRepository to real BookRepositoryImpl.
+// Every provider below automatically uses the real API now.
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
-  return MockBookRepository();
+  return BookRepositoryImpl();
 });
 
-// Provides current reading progress
+// ── Home Screen Providers ─────────────────────────────────────────────────────
 final currentProgressProvider = FutureProvider<UserProgressEntity>((ref) {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getCurrentProgress();
 });
 
-// Provides daily insights
 final insightsProvider = FutureProvider<InsightsEntity>((ref) {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getDailyInsights();
 });
 
-// Provides recommended list
 final recommendedBooksProvider = FutureProvider<List<BookEntity>>((ref) {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getRecommendedBooks();
 });
 
-// Provides trending list
 final trendingBooksProvider = FutureProvider<List<BookEntity>>((ref) {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getTrendingBooks();
 });
 
-// Provides library list
 final libraryBooksProvider = FutureProvider<List<BookEntity>>((ref) {
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getLibraryBooks();
