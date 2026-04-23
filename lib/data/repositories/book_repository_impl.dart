@@ -12,7 +12,7 @@ import '../network/api_client.dart';
 class BookRepositoryImpl implements BookRepository {
   final ApiClient _api = ApiClient.instance;
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
   BookEntity _bookFromJson(Map<String, dynamic> json) {
     return BookEntity(
       id: json['id'].toString(),
@@ -90,36 +90,26 @@ class BookRepositoryImpl implements BookRepository {
     );
   }
 
-  // ── Books ────────────────────────────────────────────────────────────────
+  // ── Books ─────────────────────────────────────────────────────────────────
   @override
   Future<List<BookEntity>> getRecommendedBooks() async {
     final data = await _api.get('/books/recommended/') as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_bookFromJson)
-        .toList();
+    return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
   }
 
   @override
   Future<List<BookEntity>> getTrendingBooks() async {
     final data = await _api.get('/books/trending/') as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_bookFromJson)
-        .toList();
+    return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
   }
 
   @override
   Future<List<BookEntity>> getLibraryBooks() async {
-    // Returns the user's in-progress books for the home screen horizontal list
     final data = await _api.get(
       '/library/',
       queryParameters: {'status': 'in_progress'},
     ) as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map((json) => _bookFromJson(json))
-        .toList();
+    return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
   }
 
   @override
@@ -128,57 +118,38 @@ class BookRepositoryImpl implements BookRepository {
     return _bookDetailFromJson(data);
   }
 
-  // ── Chapters ─────────────────────────────────────────────────────────────
+  // ── Chapters ──────────────────────────────────────────────────────────────
   @override
   Future<List<ChapterEntity>> getChapters(String bookId) async {
-    final data =
-        await _api.get('/books/$bookId/chapters/') as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_chapterFromJson)
-        .toList();
+    final data = await _api.get('/books/$bookId/chapters/') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>().map(_chapterFromJson).toList();
   }
 
-  // ── Chunks ───────────────────────────────────────────────────────────────
+  // ── Chunks ────────────────────────────────────────────────────────────────
   @override
   Future<List<ChunkEntity>> getChunks(String bookId, String chapterId) async {
-    // bookId is not needed by the endpoint but kept for interface compatibility
-    final data = await _api.get(
-      '/books/chapters/$chapterId/chunks/',
-    ) as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_chunkFromJson)
-        .toList();
+    final data = await _api.get('/books/chapters/$chapterId/chunks/') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>().map(_chunkFromJson).toList();
   }
 
-  // ── Summaries ────────────────────────────────────────────────────────────
+  // ── Summaries ─────────────────────────────────────────────────────────────
   @override
   Future<List<SummaryEntity>> getChapterSummaries(String bookId) async {
-    final data =
-        await _api.get('/books/$bookId/summaries/') as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_summaryFromJson)
-        .toList();
+    final data = await _api.get('/books/$bookId/summaries/') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>().map(_summaryFromJson).toList();
   }
 
-  // ── Flashcards ───────────────────────────────────────────────────────────
+  // ── Flashcards ────────────────────────────────────────────────────────────
   @override
   Future<List<FlashcardEntity>> getFlashcards(String bookId) async {
-    final data =
-        await _api.get('/books/$bookId/flashcards/') as List<dynamic>;
-    return data
-        .cast<Map<String, dynamic>>()
-        .map(_flashcardFromJson)
-        .toList();
+    final data = await _api.get('/books/$bookId/flashcards/') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>().map(_flashcardFromJson).toList();
   }
 
-  // ── Progress ─────────────────────────────────────────────────────────────
+  // ── Progress ──────────────────────────────────────────────────────────────
   @override
   Future<UserProgressEntity> getCurrentProgress() async {
-    final data =
-        await _api.get('/reading/progress/') as Map<String, dynamic>;
+    final data = await _api.get('/reading/progress/') as Map<String, dynamic>;
     return UserProgressEntity(
       bookId: data['bookId'].toString(),
       title: data['title'] ?? '',
@@ -190,8 +161,7 @@ class BookRepositoryImpl implements BookRepository {
 
   @override
   Future<InsightsEntity> getDailyInsights() async {
-    final data =
-        await _api.get('/reading/insights/') as Map<String, dynamic>;
+    final data = await _api.get('/reading/insights/') as Map<String, dynamic>;
     return InsightsEntity(
       cardsDue: data['cardsDue'] ?? 0,
       readTodayMinutes: data['readTodayMinutes'] ?? 0,
@@ -199,13 +169,13 @@ class BookRepositoryImpl implements BookRepository {
     );
   }
 
-  // ── Add Book (manual entry) ───────────────────────────────────────────────
-  // This searches for the book by title/author, then adds to library.
-  // Since your backend doesn't have a "create book" endpoint for users,
-  // we POST to /library/ with a book_id if found, or handle gracefully.
+  // ── Add Book ───────────────────────────────────────────────────────────────
+  // NOTE: The old "search by title and add" flow is replaced by the PDF upload
+  // flow in AddBookController. This method is kept for compatibility but
+  // now simply adds a book by ID directly to the user's library.
   @override
   Future<void> addBook(AddBookParams params) async {
-    // Step 1: Search for the book
+    // Search for the book first
     final searchResults = await _api.get(
       '/books/',
       queryParameters: {'search': params.title},
@@ -213,12 +183,11 @@ class BookRepositoryImpl implements BookRepository {
 
     if (searchResults.isEmpty) {
       throw ApiException(
-        'Book "${params.title}" not found in the catalog. Ask your admin to add it.',
+        'Book "${params.title}" not found in the catalog.',
         statusCode: 404,
       );
     }
 
-    // Step 2: Take the first match and add to library
     final bookId = searchResults.first['id'].toString();
     await _api.post('/library/', body: {'book_id': bookId});
   }
