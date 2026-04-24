@@ -14,39 +14,41 @@ class BookRepositoryImpl implements BookRepository {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   BookEntity _bookFromJson(Map<String, dynamic> json) {
-    return BookEntity(
-      id: json['id'].toString(),
-      title: json['title'] ?? '',
-      author: json['author'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      readersCount: json['readersCount']?.toString() ?? '0',
-      category: json['category'] ?? '',
-      hasAudio: json['hasAudio'] ?? false,
-      badge: json['badge'] as String?,
-    );
-  }
+  return BookEntity(
+    id: json['id'].toString(),
+    title: json['title'] ?? '',
+    author: json['author'] ?? '',
+    imageUrl: json['imageUrl'] ?? '',
+    // FIXED: Handle string ratings safely
+    rating: double.tryParse(json['rating']?.toString() ?? '') ?? 0.0,
+    readersCount: json['readersCount']?.toString() ?? '0',
+    category: json['category'] ?? '',
+    hasAudio: json['hasAudio'] ?? false,
+    badge: json['badge'] as String?,
+  );
+}
 
-  BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
-    return BookDetailEntity(
-      id: json['id'].toString(),
-      title: json['title'] ?? '',
-      author: json['author'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      readersCount: json['readersCount']?.toString() ?? '0',
-      category: json['category'] ?? '',
-      hasAudio: json['hasAudio'] ?? false,
-      badge: json['badge'] as String?,
-      description: json['description'] ?? '',
-      totalChapters: json['totalChapters'] ?? 0,
-      progressPercent: json['progressPercent'] ?? 0,
-      daysLeftToFinish: json['daysLeftToFinish'] ?? 0,
-      pagesLeft: json['pagesLeft'] ?? 0,
-      flashcardsCount: json['flashcardsCount'] ?? 0,
-      readPerDayMinutes: json['readPerDayMinutes'] ?? 45,
-    );
-  }
+BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
+  return BookDetailEntity(
+    id: json['id'].toString(),
+    title: json['title'] ?? '',
+    author: json['author'] ?? '',
+    imageUrl: json['imageUrl'] ?? '',
+    // FIXED: Handle string ratings safely
+    rating: double.tryParse(json['rating']?.toString() ?? '') ?? 0.0,
+    readersCount: json['readersCount']?.toString() ?? '0',
+    category: json['category'] ?? '',
+    hasAudio: json['hasAudio'] ?? false,
+    badge: json['badge'] as String?,
+    description: json['description'] ?? '',
+    totalChapters: json['totalChapters'] ?? 0,
+    progressPercent: json['progressPercent'] ?? 0,
+    daysLeftToFinish: json['daysLeftToFinish'] ?? 0,
+    pagesLeft: json['pagesLeft'] ?? 0,
+    flashcardsCount: json['flashcardsCount'] ?? 0,
+    readPerDayMinutes: json['readPerDayMinutes'] ?? 45,
+  );
+}
 
   ChapterEntity _chapterFromJson(Map<String, dynamic> json) {
     return ChapterEntity(
