@@ -138,3 +138,4 @@ class MockDiscussionRepository implements DiscussionRepository {
     ));
   }
 }
+

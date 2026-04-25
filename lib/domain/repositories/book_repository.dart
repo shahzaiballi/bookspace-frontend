@@ -20,3 +20,4 @@ abstract class BookRepository {
   Future<List<BookEntity>> getTrendingBooks();
   Future<List<BookEntity>> getLibraryBooks();
 }
+

@@ -9,3 +9,4 @@ class OnboardingEntity {
     required this.icon,
   });
 }
+

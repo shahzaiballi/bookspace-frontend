@@ -38,3 +38,4 @@ class BookStatsRow extends StatelessWidget {
      );
   }
 }
+

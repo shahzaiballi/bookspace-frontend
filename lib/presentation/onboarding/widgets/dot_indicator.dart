@@ -30,3 +30,4 @@ class DotIndicator extends StatelessWidget {
     );
   }
 }
+

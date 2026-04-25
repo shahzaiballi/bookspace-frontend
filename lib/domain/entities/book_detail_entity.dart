@@ -28,3 +28,4 @@ class BookDetailEntity extends BookEntity {
     required this.readPerDayMinutes,
   });
 }
+

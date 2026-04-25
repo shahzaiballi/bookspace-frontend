@@ -58,3 +58,4 @@ final filteredLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) as
       return activeBooks;
   }
 });
+

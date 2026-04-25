@@ -79,3 +79,4 @@ class ChapterHeaderCard extends StatelessWidget {
     );
   }
 }
+

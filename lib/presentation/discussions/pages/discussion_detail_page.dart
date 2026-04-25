@@ -105,3 +105,4 @@ class DiscussionDetailPage extends ConsumerWidget {
     );
   }
 }
+

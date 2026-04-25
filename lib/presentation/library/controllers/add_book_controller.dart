@@ -1,58 +1,52 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/network/api_client.dart';
+import 'package:flutter/foundation.dart';
 
-/// Controller for the user PDF upload feature.
-///
-/// Uses multipart/form-data to send the PDF file to:
-///   POST /api/v1/books/upload/
-///
-/// On success, polls:
-///   GET /api/v1/books/upload/<uploadId>/status/
-/// until processing is complete (status = 'completed' or 'failed').
+/// ✅ CLEAN: Uses ApiClient (handles auth + web/mobile automatically)
 class AddBookController extends AutoDisposeAsyncNotifier<void> {
   @override
-  FutureOr<void> build() {
-    // Initial state is idle
-  }
+  FutureOr<void> build() {}
 
-  /// Upload a PDF book to the backend.
-  ///
-  /// [title]    — book title from the form
-  /// [author]   — book author from the form (optional)
-  /// [filePath] — local path to the selected PDF file
+  /// ✅ Upload PDF - works on web/mobile (ApiClient handles auth)
   Future<void> uploadBook({
     required String title,
     required String author,
-    required String filePath,
+    String? filePath,
+    Uint8List? fileBytes,
+    String? fileName,
   }) async {
     state = const AsyncLoading();
 
     try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        throw Exception('File not found. Please select the PDF again.');
+      // ✅ Validate file
+      if (filePath == null && fileBytes == null) {
+        throw Exception('No file selected');
       }
 
-      // Upload via multipart form — ApiClient handles auth headers
+      // ✅ ApiClient handles auth token + refresh automatically!
       final response = await ApiClient.instance.uploadFile(
-        endpoint: '/books/upload/',
+        endpoint: '/api/v1/books/upload/',
         filePath: filePath,
-        fieldName: 'pdf_file',
+        fileBytes: fileBytes,
+        fileName: fileName,
         fields: {
           'title': title,
           if (author.trim().isNotEmpty) 'author': author.trim(),
         },
       );
 
-      // The backend returns 202 Accepted with the upload ID
-      // We don't need to poll here — the user will see the book
-      // appear in their library after background processing completes.
-      // A success message is shown in AddBookPage via the listener.
+      debugPrint('📤 Upload response: ${response.statusCode}');
 
-      state = const AsyncData(null);
+      if (response.statusCode == 201 || response.statusCode == 202) {
+        state = const AsyncData(null);
+      } else {
+        throw Exception('Upload failed: ${response.statusCode}');
+      }
     } catch (e, st) {
+      debugPrint('❌ Upload error: $e');
       state = AsyncError(e, st);
     }
   }

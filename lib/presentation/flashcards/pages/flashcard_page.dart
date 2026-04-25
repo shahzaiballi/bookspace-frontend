@@ -220,3 +220,4 @@ class _FlashcardPageState extends ConsumerState<FlashcardPage> {
     );
   }
 }
+

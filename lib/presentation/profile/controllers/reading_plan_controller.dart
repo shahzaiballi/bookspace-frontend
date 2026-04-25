@@ -20,3 +20,4 @@ class ReadingPlanController extends Notifier<ReadingPlanEntity> {
 final readingPlanProvider = NotifierProvider<ReadingPlanController, ReadingPlanEntity>(
   ReadingPlanController.new,
 );
+

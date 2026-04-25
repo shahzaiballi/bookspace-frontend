@@ -11,3 +11,4 @@ class FlashcardEntity {
     required this.answer,
   });
 }
+

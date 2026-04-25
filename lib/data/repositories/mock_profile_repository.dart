@@ -54,3 +54,4 @@ class MockProfileRepository implements ProfileRepository {
      // Simulated preference update
   }
 }
+

@@ -43,3 +43,4 @@ class FlashcardFlipNotifier extends StateNotifier<bool> {
 final flashcardFlipProvider = StateNotifierProvider.family<FlashcardFlipNotifier, bool, String>((ref, bookId) {
   return FlashcardFlipNotifier();
 });
+

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data'; // ✅ Added for Uint8List
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -7,7 +8,7 @@ import '../controllers/add_book_controller.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/foundation.dart'; // for kIsWeb
+import 'package:flutter/foundation.dart';
 
 class AddBookPage extends ConsumerStatefulWidget {
   const AddBookPage({super.key});
@@ -21,8 +22,9 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
   final _titleController = TextEditingController();
   final _authorController = TextEditingController();
 
-  /// The selected PDF file path (after user picks a file)
+  /// ✅ Fixed: Handle both file path (mobile) AND bytes (web)
   String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
   String? _selectedFileName;
 
   @override
@@ -33,63 +35,57 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
   }
 
   Future<void> _handleFileUpload() async {
-  // ✅ Only request permissions on mobile (NOT web)
-  if (!kIsWeb) {
-    final status = await Permission.storage.request();
+    // ✅ Only request permissions on mobile (NOT web)
+    if (!kIsWeb) {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        final mediaStatus = await Permission.manageExternalStorage.request();
+        if (!mediaStatus.isGranted && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Storage access is required to upload PDF books.'),
+              backgroundColor: Color(0xFF1E152A),
+            ),
+          );
+          return;
+        }
+      }
+    }
 
-    if (!status.isGranted) {
-      final mediaStatus = await Permission.manageExternalStorage.request();
+    // ✅ Works on ALL platforms (including web)
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
 
-      if (!mediaStatus.isGranted && mounted) {
+    if (result != null && mounted) {
+      final file = result.files.single;
+      const maxBytes = 50 * 1024 * 1024;
+
+      if (file.size > maxBytes) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Storage access is required to upload PDF books.'),
-            backgroundColor: Color(0xFF1E152A),
+            content: Text('PDF is too large. Maximum size is 50MB.'),
+            backgroundColor: Colors.redAccent,
           ),
         );
         return;
       }
+
+      setState(() {
+        _selectedFilePath = file.path; // null on web ✅
+        _selectedFileBytes = file.bytes; // ✅ bytes on web/mobile
+        _selectedFileName = file.name;
+      });
     }
   }
 
-  // ✅ Works on ALL platforms (including web)
-  final result = await FilePicker.platform.pickFiles(
-    type: FileType.custom,
-    allowedExtensions: ['pdf'],
-  );
-
-  if (result != null && mounted) {
-    final file = result.files.single;
-
-    // Web doesn't always have a file path
-    final filePath = file.path;
-
-    if (filePath == null && !kIsWeb) return;
-
-    const maxBytes = 50 * 1024 * 1024;
-
-    if (file.size > maxBytes) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF is too large. Maximum size is 50MB.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _selectedFilePath = filePath; // ⚠️ will be null on web
-      _selectedFileName = file.name;
-    });
-  }
-}
-
-  /// Submits the form — uploads PDF + metadata to the backend
+  /// ✅ Fixed: Check BOTH path and bytes for web support
   Future<void> _submitForm() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (_selectedFilePath == null) {
+    // ✅ Fixed validation for web/mobile
+    if (_selectedFilePath == null && _selectedFileBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select a PDF file to upload.'),
@@ -102,13 +98,14 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
     await ref.read(addBookControllerProvider.notifier).uploadBook(
       title: _titleController.text.trim(),
       author: _authorController.text.trim(),
-      filePath: _selectedFilePath!,
+      filePath: _selectedFilePath,
+      fileBytes: _selectedFileBytes,
+      fileName: _selectedFileName,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen for success or error from the upload controller
     ref.listen<AsyncValue<void>>(addBookControllerProvider, (previous, next) {
       if (!next.isLoading && next.hasValue && previous is AsyncLoading) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,6 +130,7 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
     });
 
     final isLoading = ref.watch(addBookControllerProvider).isLoading;
+    final hasFile = _selectedFilePath != null || _selectedFileBytes != null; // ✅ Fixed UI state
 
     return Container(
       decoration: BoxDecoration(
@@ -171,7 +169,7 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
             ),
             SizedBox(height: context.responsive.sp(24)),
 
-            // ── PDF Upload Section ────────────────────────────────────────────
+            // ── PDF Upload Section ──
             GestureDetector(
               onTap: isLoading ? null : _handleFileUpload,
               child: AnimatedContainer(
@@ -179,15 +177,11 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
                 width: double.infinity,
                 padding: EdgeInsets.all(context.responsive.sp(24)),
                 decoration: BoxDecoration(
-                  color: _selectedFilePath != null
-                      ? const Color(0xFFB062FF).withOpacity(0.1)
-                      : const Color(0xFF1E233D),
+                  color: hasFile ? const Color(0xFFB062FF).withOpacity(0.1) : const Color(0xFF1E233D),
                   borderRadius: BorderRadius.circular(context.responsive.sp(16)),
                   border: Border.all(
-                    color: _selectedFilePath != null
-                        ? const Color(0xFFB062FF).withOpacity(0.5)
-                        : Colors.white10,
-                    width: _selectedFilePath != null ? 1.5 : 1,
+                    color: hasFile ? const Color(0xFFB062FF).withOpacity(0.5) : Colors.white10,
+                    width: hasFile ? 1.5 : 1,
                   ),
                 ),
                 child: Column(
@@ -195,22 +189,18 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
                     Container(
                       padding: EdgeInsets.all(context.responsive.sp(16)),
                       decoration: BoxDecoration(
-                        color: _selectedFilePath != null
-                            ? const Color(0xFFB062FF).withOpacity(0.2)
-                            : const Color(0xFF381A5D),
+                        color: hasFile ? const Color(0xFFB062FF).withOpacity(0.2) : const Color(0xFF381A5D),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _selectedFilePath != null
-                            ? Icons.check_circle_outline
-                            : Icons.file_upload_outlined,
+                        hasFile ? Icons.check_circle_outline : Icons.file_upload_outlined,
                         color: const Color(0xFFB062FF),
                         size: context.responsive.sp(24),
                       ),
                     ),
                     SizedBox(height: context.responsive.sp(12)),
 
-                    if (_selectedFilePath != null) ...[
+                    if (hasFile) ...[
                       Text(
                         _selectedFileName ?? 'PDF Selected',
                         style: TextStyle(
@@ -232,7 +222,7 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
                       ),
                     ] else ...[
                       Text(
-                        'Upload PDF or EPUB',
+                        'Upload PDF',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: context.responsive.sp(16),
@@ -265,7 +255,7 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
 
             SizedBox(height: context.responsive.sp(24)),
 
-            // ── Book Details Form ─────────────────────────────────────────────
+            // ── Book Details Form ──
             Form(
               key: _formKey,
               child: Column(
@@ -279,8 +269,7 @@ class _AddBookPageState extends ConsumerState<AddBookPage> {
                   CustomTextField(
                     controller: _titleController,
                     hintText: 'Enter book title',
-                    validator: (value) =>
-                        value == null || value.isEmpty ? 'Title is required' : null,
+                    validator: (value) => value == null || value.isEmpty ? 'Title is required' : null,
                   ),
 
                   SizedBox(height: context.responsive.sp(16)),

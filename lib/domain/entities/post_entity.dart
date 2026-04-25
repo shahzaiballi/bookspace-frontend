@@ -23,3 +23,4 @@ class PostEntity {
     required this.bookId,
   });
 }
+

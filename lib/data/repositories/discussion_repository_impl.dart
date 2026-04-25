@@ -11,7 +11,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
   @override
   Future<List<PostEntity>> getPosts({String filter = 'All'}) async {
     final data = await _api.get(
-      '/discussions/',
+      '/api/v1/discussions/',
       queryParameters: {'filter': filter},
     ) as List;
     return data.map((e) => _parsePost(e)).toList();
@@ -19,7 +19,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
 
   Future<List<PostEntity>> getPostsByBook(String bookId) async {
     final data = await _api.get(
-      '/discussions/',
+      '/api/v1/discussions/',
       queryParameters: {'book_id': bookId},
     ) as List;
     return data.map((e) => _parsePost(e)).toList();
@@ -27,7 +27,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
 
   @override
   Future<PostEntity> getPostDetails(String postId) async {
-    final data = await _api.get('/discussions/$postId/');
+    final data = await _api.get('/api/v1/discussions/$postId/');
     return _parsePost(data);
   }
 
@@ -46,18 +46,18 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
       body['chapter_tag'] = chapterTag;
     }
 
-    final data = await _api.post('/discussions/', body: body);
+    final data = await _api.post('/api/v1/discussions/', body: body);
     return _parsePost(data);
   }
 
   Future<void> deletePost(String postId) async {
-    await _api.delete('/discussions/$postId/');
+    await _api.delete('/api/v1/discussions/$postId/');
   }
 
   // ── Likes ─────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> togglePostLike(String postId) async {
-    final data = await _api.post('/discussions/$postId/like/');
+    final data = await _api.post('/api/v1/discussions/$postId/like/');
     return {
       'liked': data['liked'] as bool,
       'likesCount': data['likesCount'] as int,
@@ -66,7 +66,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
 
   Future<Map<String, dynamic>> toggleReplyLike(String replyId) async {
     final data = await _api.post(
-      '/discussions/replies/$replyId/like/',
+      '/api/v1/discussions/replies/$replyId/like/',
     );
     return {
       'liked': data['liked'] as bool,
@@ -79,7 +79,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
   @override
   Future<List<ReplyEntity>> getReplies(String postId) async {
     final data = await _api.get(
-      '/discussions/$postId/replies/',
+      '/api/v1/discussions/$postId/replies/',
     ) as List;
     return data.map((e) => _parseReply(e)).toList();
   }
@@ -89,7 +89,7 @@ class DiscussionRepositoryImpl implements DiscussionRepository {
     required String content,
   }) async {
     final data = await _api.post(
-      '/discussions/$postId/replies/',
+      '/api/v1/discussions/$postId/replies/',
       body: {'content': content},
     );
     return _parseReply(data);

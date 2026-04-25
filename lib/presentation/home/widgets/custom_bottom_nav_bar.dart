@@ -211,3 +211,4 @@ class _NavItem {
     required this.label,
   });
 }
+

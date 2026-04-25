@@ -63,3 +63,4 @@ class ReadingSessionState {
 
 // StateProvider for the global 5-chunk counter
 final dailyChunkGoalProvider = StateProvider<int>((ref) => 0);
+

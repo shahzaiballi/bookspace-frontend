@@ -78,3 +78,4 @@ class BookGridCard extends StatelessWidget {
     );
   }
 }
+

@@ -15,3 +15,4 @@ class ReplyEntity {
     this.likesCount = 0,
   });
 }
+

@@ -23,3 +23,4 @@ class UserProfileEntity {
     required this.achievements,
   });
 }
+

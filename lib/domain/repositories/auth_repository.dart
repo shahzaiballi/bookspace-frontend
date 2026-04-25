@@ -6,3 +6,4 @@ abstract class AuthRepository {
   Future<UserEntity> signUp(UserCredentials credentials);
   Future<void> logout();
 }
+

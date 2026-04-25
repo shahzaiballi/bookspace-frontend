@@ -7,3 +7,4 @@ final bookDetailProvider = FutureProvider.family<BookDetailEntity, String>((ref,
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getBookDetails(id);
 });
+

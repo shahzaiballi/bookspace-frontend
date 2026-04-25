@@ -25,3 +25,4 @@ class InsightsEntity {
     required this.dayStreak,
   });
 }
+

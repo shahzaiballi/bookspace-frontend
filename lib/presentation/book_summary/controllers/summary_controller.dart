@@ -34,3 +34,4 @@ final summaryControllerProvider = AsyncNotifierProvider.autoDispose
 
 // ── Accordion Expansion State ─────────────────────────────────────────────────
 final activeExpansionProvider = StateProvider.autoDispose<int?>((ref) => null);
+

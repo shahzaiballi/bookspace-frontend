@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data'; // ✅ Web bytes support
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart'; // ✅ For MultipartFile
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
@@ -8,17 +11,13 @@ class ApiClient {
   factory ApiClient() => instance;
   ApiClient._internal();
 
-  // ── Change this to your machine's local IP if testing on a real device ──
-  // For emulator: 10.0.2.2 (Android) or 127.0.0.1 (iOS simulator)
-  // For real device: your computer's local network IP e.g. 192.168.1.x
-  final String baseUrl = 'http://127.0.0.1:8000/api/v1';
-
+  final String baseUrl = 'http://127.0.0.1:8000'; // ✅ Local dev
   final _storage = const FlutterSecureStorage();
 
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
 
-  // ── Token Management ──────────────────────────────────────────────────────
+  // ── Token Management ──
   Future<void> setTokens({required String access, required String refresh}) async {
     await _storage.write(key: _accessTokenKey, value: access);
     await _storage.write(key: _refreshTokenKey, value: refresh);
@@ -37,7 +36,7 @@ class ApiClient {
     await _storage.delete(key: _refreshTokenKey);
   }
 
-  // ── JSON Headers ──────────────────────────────────────────────────────────
+  // ── JSON Headers ──
   Future<Map<String, String>> get _headers async {
     final token = await getAccessToken();
     final headers = <String, String>{'Content-Type': 'application/json'};
@@ -47,14 +46,14 @@ class ApiClient {
     return headers;
   }
 
-  // ── Token Refresh ─────────────────────────────────────────────────────────
+  // ── Token Refresh ──
   Future<bool> _tryRefreshToken() async {
     final refresh = await getRefreshToken();
     if (refresh == null) return false;
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/token/refresh/'),
+        Uri.parse('$baseUrl/api/v1/auth/token/refresh/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refresh': refresh}),
       );
@@ -72,13 +71,48 @@ class ApiClient {
     return false;
   }
 
-  // ── Core JSON Request ─────────────────────────────────────────────────────
-  Future<dynamic> _request(
-    String method,
-    String endpoint, {
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
+  // ── ✅ FIXED: File Upload with WEB SUPPORT ──
+  Future<http.Response> uploadFile({
+    required String endpoint,
+    String? filePath,
+    Uint8List? fileBytes,  // ✅ Web bytes
+    String? fileName,
+    Map<String, String> fields = const {},
   }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final request = http.MultipartRequest('POST', uri);
+
+    // ✅ Auto-add auth token
+    final token = await getAccessToken();
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // ✅ Add form fields
+    fields.forEach((k, v) => request.fields[k] = v);
+
+    // ✅ Handle MOBILE path OR WEB bytes
+    if (fileBytes != null && fileName != null) {
+      debugPrint('🌐 Web: Adding ${fileBytes.length} bytes as pdf_file');
+      request.files.add(
+        http.MultipartFile.fromBytes('pdf_file', fileBytes, filename: fileName),
+      );
+    } else if (filePath != null) {
+      debugPrint('📱 Mobile: Adding file $filePath');
+      final file = File(filePath);
+      if (!await file.exists()) throw Exception('File not found: $filePath');
+      request.files.add(await http.MultipartFile.fromPath('pdf_file', filePath));
+    } else {
+      throw Exception('No file provided');
+    }
+
+    final streamedResponse = await request.send();
+    return http.Response.fromStream(streamedResponse);
+  }
+
+  // ── JSON Requests (unchanged) ──
+  Future<dynamic> _request(String method, String endpoint, {Map<String, dynamic>? body, Map<String, dynamic>? queryParameters}) async {
+    // ... your existing _request code (unchanged)
     Future<http.Response> makeRequest() async {
       final headers = await _headers;
       final uri = Uri.parse('$baseUrl$endpoint').replace(
@@ -86,18 +120,12 @@ class ApiClient {
       );
 
       switch (method) {
-        case 'GET':
-          return http.get(uri, headers: headers);
-        case 'POST':
-          return http.post(uri, headers: headers, body: jsonEncode(body ?? {}));
-        case 'PATCH':
-          return http.patch(uri, headers: headers, body: jsonEncode(body ?? {}));
-        case 'PUT':
-          return http.put(uri, headers: headers, body: jsonEncode(body ?? {}));
-        case 'DELETE':
-          return http.delete(uri, headers: headers);
-        default:
-          throw Exception('Unsupported HTTP method: $method');
+        case 'GET': return http.get(uri, headers: headers);
+        case 'POST': return http.post(uri, headers: headers, body: jsonEncode(body ?? {}));
+        case 'PATCH': return http.patch(uri, headers: headers, body: jsonEncode(body ?? {}));
+        case 'PUT': return http.put(uri, headers: headers, body: jsonEncode(body ?? {}));
+        case 'DELETE': return http.delete(uri, headers: headers);
+        default: throw Exception('Unsupported method: $method');
       }
     }
 
@@ -105,120 +133,42 @@ class ApiClient {
 
     if (response.statusCode == 401) {
       final refreshed = await _tryRefreshToken();
-      if (!refreshed) throw AuthException('Session expired. Please log in again.');
+      if (!refreshed) throw const AuthException('Session expired');
       response = await makeRequest();
     }
 
     return _handleResponse(response);
   }
 
-  // ── File Upload (Multipart) ───────────────────────────────────────────────
-  /// Upload a file using multipart/form-data.
-  ///
-  /// Used for PDF book uploads from AddBookPage.
-  ///
-  /// [endpoint]  — API path e.g. '/books/upload/'
-  /// [filePath]  — local path to the file on device
-  /// [fieldName] — form field name for the file e.g. 'pdf_file'
-  /// [fields]    — additional text fields e.g. {'title': 'My Book'}
-  Future<dynamic> uploadFile({
-    required String endpoint,
-    required String filePath,
-    required String fieldName,
-    Map<String, String> fields = const {},
-  }) async {
-    final token = await getAccessToken();
-    final uri = Uri.parse('$baseUrl$endpoint');
-
-    Future<http.StreamedResponse> makeRequest() async {
-      final request = http.MultipartRequest('POST', uri);
-
-      // Auth header
-      if (token != null) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
-
-      // Add the file
-      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
-
-      // Add text fields
-      request.fields.addAll(fields);
-
-      return request.send();
-    }
-
-    var streamedResponse = await makeRequest();
-
-    // Handle 401 with token refresh
-    if (streamedResponse.statusCode == 401) {
-      final refreshed = await _tryRefreshToken();
-      if (!refreshed) throw AuthException('Session expired. Please log in again.');
-      streamedResponse = await makeRequest();
-    }
-
-    final response = await http.Response.fromStream(streamedResponse);
-    return _handleResponse(response);
-  }
-
-  // ── Public HTTP Methods ───────────────────────────────────────────────────
-  Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParameters}) =>
-      _request('GET', endpoint, queryParameters: queryParameters);
-
-  Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) =>
-      _request('POST', endpoint, body: body);
-
-  Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body}) =>
-      _request('PATCH', endpoint, body: body);
-
-  Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) =>
-      _request('PUT', endpoint, body: body);
-
-  Future<dynamic> delete(String endpoint) => _request('DELETE', endpoint);
-
-  // ── Response Handler ──────────────────────────────────────────────────────
   dynamic _handleResponse(http.Response response) {
     final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : null;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return decoded;
-    }
+    if (response.statusCode >= 200 && response.statusCode < 300) return decoded;
 
     String errorMessage = 'Something went wrong';
-    if (decoded is Map) {
-      errorMessage = decoded['detail'] ??
-          decoded['error'] ??
-          decoded['message'] ??
-          _extractFirstFieldError(decoded) ??
-          errorMessage;
+    if (decoded is Map<String, dynamic>) {
+      errorMessage = decoded['detail'] ?? decoded['error'] ?? decoded['message'] ?? errorMessage;
     }
-
     throw ApiException(errorMessage, statusCode: response.statusCode);
   }
 
-  String? _extractFirstFieldError(Map decoded) {
-    for (final entry in decoded.entries) {
-      final value = entry.value;
-      if (value is List && value.isNotEmpty) return '${entry.key}: ${value.first}';
-      if (value is String) return '${entry.key}: $value';
-    }
-    return null;
-  }
+  // Public methods
+  Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParameters}) => _request('GET', endpoint, queryParameters: queryParameters);
+  Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) => _request('POST', endpoint, body: body);
+  Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body}) => _request('PATCH', endpoint, body: body);
+  Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) => _request('PUT', endpoint, body: body);
+  Future<dynamic> delete(String endpoint) => _request('DELETE', endpoint);
 }
 
-// ── Exceptions ────────────────────────────────────────────────────────────────
+// Exceptions
 class AuthException implements Exception {
   final String message;
   const AuthException(this.message);
-
-  @override
-  String toString() => message;
+  @override String toString() => message;
 }
 
 class ApiException implements Exception {
   final String message;
   final int statusCode;
   const ApiException(this.message, {required this.statusCode});
-
-  @override
-  String toString() => message;
+  @override String toString() => message;
 }

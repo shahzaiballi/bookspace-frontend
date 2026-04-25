@@ -143,3 +143,4 @@ class ChapterSummaryAccordion extends ConsumerWidget {
     );
   }
 }
+

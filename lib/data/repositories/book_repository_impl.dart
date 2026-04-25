@@ -95,20 +95,20 @@ BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
   // ── Books ─────────────────────────────────────────────────────────────────
   @override
   Future<List<BookEntity>> getRecommendedBooks() async {
-    final data = await _api.get('/books/recommended/') as List<dynamic>;
+    final data = await _api.get('api/v1/books/recommended/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
   }
 
   @override
   Future<List<BookEntity>> getTrendingBooks() async {
-    final data = await _api.get('/books/trending/') as List<dynamic>;
+    final data = await _api.get('/api/v1/books/trending/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
   }
 
   @override
   Future<List<BookEntity>> getLibraryBooks() async {
     final data = await _api.get(
-      '/library/',
+      '/api/v1/library/',
       queryParameters: {'status': 'in_progress'},
     ) as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_bookFromJson).toList();
@@ -116,42 +116,42 @@ BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
 
   @override
   Future<BookDetailEntity> getBookDetails(String id) async {
-    final data = await _api.get('/books/$id/') as Map<String, dynamic>;
+    final data = await _api.get('/api/v1/books/$id/') as Map<String, dynamic>;
     return _bookDetailFromJson(data);
   }
 
   // ── Chapters ──────────────────────────────────────────────────────────────
   @override
   Future<List<ChapterEntity>> getChapters(String bookId) async {
-    final data = await _api.get('/books/$bookId/chapters/') as List<dynamic>;
+    final data = await _api.get('/api/v1/books/$bookId/chapters/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_chapterFromJson).toList();
   }
 
   // ── Chunks ────────────────────────────────────────────────────────────────
   @override
   Future<List<ChunkEntity>> getChunks(String bookId, String chapterId) async {
-    final data = await _api.get('/books/chapters/$chapterId/chunks/') as List<dynamic>;
+    final data = await _api.get('/api/v1/books/$bookId/chapters/$chapterId/chunks/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_chunkFromJson).toList();
   }
 
   // ── Summaries ─────────────────────────────────────────────────────────────
   @override
   Future<List<SummaryEntity>> getChapterSummaries(String bookId) async {
-    final data = await _api.get('/books/$bookId/summaries/') as List<dynamic>;
+    final data = await _api.get('/api/v1/books/$bookId/summaries/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_summaryFromJson).toList();
   }
 
   // ── Flashcards ────────────────────────────────────────────────────────────
   @override
   Future<List<FlashcardEntity>> getFlashcards(String bookId) async {
-    final data = await _api.get('/books/$bookId/flashcards/') as List<dynamic>;
+    final data = await _api.get('/api/v1/books/$bookId/flashcards/') as List<dynamic>;
     return data.cast<Map<String, dynamic>>().map(_flashcardFromJson).toList();
   }
 
   // ── Progress ──────────────────────────────────────────────────────────────
   @override
   Future<UserProgressEntity> getCurrentProgress() async {
-    final data = await _api.get('/reading/progress/') as Map<String, dynamic>;
+    final data = await _api.get('/api/v1/reading/progress/') as Map<String, dynamic>;
     return UserProgressEntity(
       bookId: data['bookId'].toString(),
       title: data['title'] ?? '',
@@ -163,7 +163,7 @@ BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
 
   @override
   Future<InsightsEntity> getDailyInsights() async {
-    final data = await _api.get('/reading/insights/') as Map<String, dynamic>;
+    final data = await _api.get('/api/v1/reading/insights/') as Map<String, dynamic>;
     return InsightsEntity(
       cardsDue: data['cardsDue'] ?? 0,
       readTodayMinutes: data['readTodayMinutes'] ?? 0,
@@ -179,7 +179,7 @@ BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
   Future<void> addBook(AddBookParams params) async {
     // Search for the book first
     final searchResults = await _api.get(
-      '/books/',
+      '/api/v1/books/',
       queryParameters: {'search': params.title},
     ) as List<dynamic>;
 
@@ -191,6 +191,6 @@ BookDetailEntity _bookDetailFromJson(Map<String, dynamic> json) {
     }
 
     final bookId = searchResults.first['id'].toString();
-    await _api.post('/library/', body: {'book_id': bookId});
+    await _api.post('/api/v1/library/', body: {'book_id': bookId});
   }
 }

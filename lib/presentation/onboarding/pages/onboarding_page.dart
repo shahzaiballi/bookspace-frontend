@@ -217,3 +217,4 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     return Icons.image;
   }
 }
+

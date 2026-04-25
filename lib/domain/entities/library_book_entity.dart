@@ -57,3 +57,4 @@ class LibraryBookEntity extends BookEntity {
     );
   }
 }
+

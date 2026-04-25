@@ -22,3 +22,4 @@ class NavigationService {
     debugPrint('Onboarding finished. Navigate to the next screen.');
   }
 }
+

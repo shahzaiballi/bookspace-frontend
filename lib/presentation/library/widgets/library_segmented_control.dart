@@ -50,3 +50,4 @@ class LibrarySegmentedControl extends ConsumerWidget {
     );
   }
 }
+

@@ -212,3 +212,4 @@ class NotificationService {
 void _onBackgroundNotificationResponse(NotificationResponse response) {
   // Can handle background actions here, but generally launchDetails is enough
 }
+

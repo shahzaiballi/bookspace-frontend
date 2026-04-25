@@ -478,3 +478,4 @@ class _GhostButton extends StatelessWidget {
     );
   }
 }
+

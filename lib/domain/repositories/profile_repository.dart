@@ -5,3 +5,4 @@ abstract class ProfileRepository {
   Future<void> updateNotificationPreference(bool enabled);
   Future<void> updateDarkModePreference(bool enabled);
 }
+

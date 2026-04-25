@@ -46,3 +46,4 @@ class SocialAuthButton extends StatelessWidget {
     );
   }
 }
+

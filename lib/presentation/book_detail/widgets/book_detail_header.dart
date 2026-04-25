@@ -97,3 +97,4 @@ class BookDetailHeader extends StatelessWidget {
     );
   }
 }
+

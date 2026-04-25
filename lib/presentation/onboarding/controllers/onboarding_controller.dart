@@ -9,3 +9,4 @@ final onboardingItemsProvider = Provider<List<OnboardingEntity>>((ref) {
 
 /// StateProvider tracking the current index of the PageView
 final onboardingCurrentPageIndexProvider = StateProvider<int>((ref) => 0);
+

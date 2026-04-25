@@ -9,3 +9,4 @@ class UserEntity {
     required this.email,
   });
 }
+

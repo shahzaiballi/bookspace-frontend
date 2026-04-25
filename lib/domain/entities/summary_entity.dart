@@ -15,3 +15,4 @@ class SummaryEntity {
     this.isLocked = false,
   });
 }
+

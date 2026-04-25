@@ -6,3 +6,4 @@ abstract class DiscussionRepository {
   Future<PostEntity> getPostDetails(String postId);
   Future<List<ReplyEntity>> getReplies(String postId);
 }
+

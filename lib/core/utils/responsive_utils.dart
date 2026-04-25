@@ -24,3 +24,4 @@ class ResponsiveUtils {
 extension ResponsiveContext on BuildContext {
   ResponsiveUtils get responsive => ResponsiveUtils(this);
 }
+

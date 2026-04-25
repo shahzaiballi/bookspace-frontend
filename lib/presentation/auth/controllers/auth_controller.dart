@@ -84,3 +84,4 @@ class AuthController extends AsyncNotifier<UserEntity?> {
     state = const AsyncData(null);
   }
 }
+

@@ -188,3 +188,4 @@ class ChapterListItem extends StatelessWidget {
      );
   }
 }
+

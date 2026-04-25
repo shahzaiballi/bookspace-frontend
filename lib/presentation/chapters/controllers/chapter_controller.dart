@@ -7,3 +7,4 @@ final chapterListProvider = FutureProvider.family<List<ChapterEntity>, String>((
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getChapters(bookId);
 });
+

@@ -148,3 +148,4 @@ final readingSessionControllerProvider = AsyncNotifierProvider.autoDispose.famil
 );
 
 int _min(int a, int b) => a < b ? a : b;
+

@@ -225,3 +225,4 @@ class _InsightsGridState extends State<InsightsGrid>
     );
   }
 }
+

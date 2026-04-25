@@ -9,7 +9,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> login(UserCredentials credentials) async {
     final data = await _api.post(
-      '/auth/login/',
+      '/api/v1/api/v1/auth/login/',
       body: {
         'email': credentials.email,
         'password': credentials.password,
@@ -35,7 +35,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> signUp(UserCredentials credentials) async {
     final data = await _api.post(
-      '/auth/register/',
+      '/api/v1/auth/register/',
       body: {
         'full_name': credentials.fullName ?? '',
         'email': credentials.email,
@@ -64,7 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final refresh = await _api.getRefreshToken();
     if (refresh != null) {
       try {
-        await _api.post('/auth/logout/', body: {'refresh': refresh});
+        await _api.post('/api/v1/api/v1/auth/logout/', body: {'refresh': refresh});
       } catch (_) {
         // Ignore - token might already be invalid
       }
