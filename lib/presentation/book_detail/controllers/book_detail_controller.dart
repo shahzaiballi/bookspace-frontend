@@ -8,7 +8,7 @@ import '../../../core/providers/progress_refresh_provider.dart';
 // book detail page updates automatically after reading sessions.
 final bookDetailProvider = FutureProvider.family<BookDetailEntity, String>((ref, id) {
   // Real-time update: refetch book details when reading progress changes.
-  ref.watch(pr3t24NpUrJMNunMMASmhAM953bFGeLXzN7);
+  ref.watch(progressRefreshProvider);
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getBookDetails(id);
 });

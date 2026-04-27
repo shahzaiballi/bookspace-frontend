@@ -24,7 +24,7 @@ final libraryFilterProvider = StateProvider<int>((ref) => 0);
 // refetches when reading progress is updated from the chunked reading screen.
 final rawLibraryProvider = FutureProvider<List<LibraryBookEntity>>((ref) {
   // Real-time update: refetch whenever reading progress changes.
-  ref.watch(pr3t24NpUrJMNunMMASmhAM953bFGeLXzN7);
+  ref.watch(progressRefreshProvider);
   final repo = ref.watch(libraryRepositoryProvider);
   return repo.getUserLibrary();
 });

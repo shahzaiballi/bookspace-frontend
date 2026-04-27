@@ -103,6 +103,8 @@ class ReadingSessionController
       state = AsyncData(current.copyWith(
         currentChunkIndex: index,
         remainingSeconds: newChunk.estimatedMinutes * 60,
+        // Clear session complete flag when navigating within chunks
+        isSessionComplete: false,
       ));
       _startTimer();
     }
@@ -111,38 +113,32 @@ class ReadingSessionController
   Future<void> nextChunk() async {
     if (!state.hasValue) return;
     final current = state.value!;
-    final previousIndex = current.currentChunkIndex;
+    final currentIndex = current.currentChunkIndex;
 
     // Increment global daily chunk counter
     ref.read(dailyChunkGoalProvider.notifier).state++;
 
-    // ── Record session on backend ────────────────────────────────────────────
+    // ── Record session for the chunk just completed ──────────────────────────
     await _recordSession(
-      chunkIndex: previousIndex,
+      chunkIndex: currentIndex,
       durationSeconds: _elapsedSeconds,
       chunksCompleted: 1,
     );
 
-    final nextIndex = previousIndex + 1;
+    final nextIndex = currentIndex + 1;
+
     if (nextIndex < current.chunks.length) {
+      // ── There are more chunks — navigate to the next one ──────────────────
       goToChunk(nextIndex);
     } else {
-      // Last chunk — mark chapter complete on the backend
-      await _recordSession(
-        chunkIndex: previousIndex,
-        durationSeconds: _elapsedSeconds,
-        chunksCompleted: 1,
-        isLastChunk: true,
-      );
+      // ── All chunks in this chapter are done — mark chapter complete ────────
       _timer?.cancel();
       state = AsyncData(current.copyWith(isSessionComplete: true));
     }
 
     // ── REAL-TIME UI UPDATE ──────────────────────────────────────────────────
     // Incrementing the shared refresh trigger causes every provider that
-    // watches [pr3t24NpUrJMNunMMASmhAM953bFGeLXzN7] to automatically refetch.
-    // This propagates updated progress to Home, Library, Book Detail, and
-    // Chapter List pages without requiring a manual restart or pull-to-refresh.
+    // watches [pr3nP5oFahNL86vESFrkKjmuupsQa1mPzN7] to automatically refetch.
     ref.triggerProgressRefresh();
   }
 
@@ -179,7 +175,6 @@ class ReadingSessionController
     required int chunkIndex,
     required int durationSeconds,
     required int chunksCompleted,
-    bool isLastChunk = false,
   }) async {
     final repo = ref.read(bookRepositoryProvider) as BookRepositoryImpl;
     try {

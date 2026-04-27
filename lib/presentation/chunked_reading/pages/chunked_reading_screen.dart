@@ -126,11 +126,15 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
         final textColor = _getTextColor(state.themeMode);
         final iconColor = _getIconColor(state.themeMode);
 
+        // Progress is based on current chunk position within the chapter
         final progress = state.chunks.isNotEmpty
             ? (state.currentChunkIndex + 1) / state.chunks.length
             : 0.0;
-        final unreadCount =
-            state.chunks.length - (state.currentChunkIndex + 1);
+
+        // How many chunks are left after the current one
+        final chunksLeft = state.chunks.isNotEmpty
+            ? state.chunks.length - (state.currentChunkIndex + 1)
+            : 0;
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -142,7 +146,7 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
 
                 return Column(
                   children: [
-                    // Top progress bar
+                    // Top progress bar showing position within chapter
                     LinearProgressIndicator(
                       value: progress,
                       minHeight: 4,
@@ -158,13 +162,16 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Back button
                           Flexible(
                             child: IconButton(
                               icon: Icon(Icons.arrow_back, color: iconColor),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ),
-                          if (unreadCount > 1)
+
+                          // Chunk position indicator — shows "Chunk X of Y"
+                          if (state.chunks.isNotEmpty && !state.isSessionComplete)
                             Flexible(
                               flex: 3,
                               child: Container(
@@ -178,17 +185,21 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  'You have $unreadCount unread chunks.',
+                                  chunksLeft > 0
+                                      ? 'Part ${state.currentChunkIndex + 1} of ${state.chunks.length}'
+                                      : 'Final part · ${state.chunks.length} of ${state.chunks.length}',
                                   style: TextStyle(
                                       color: iconColor,
-                                      fontSize: 10,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
-                                  maxLines: 2,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
+
+                          // Timer + settings
                           Flexible(
                             flex: 3,
                             child: Row(
@@ -253,10 +264,28 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                               },
                               child: state.chunks.isEmpty
                                   ? Center(
-                                      child: Text(
-                                        'No content available for this chapter.',
-                                        style: TextStyle(color: textColor),
-                                        textAlign: TextAlign.center,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(32),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.auto_stories_outlined,
+                                                color: iconColor
+                                                    .withOpacity(0.4),
+                                                size: 48),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'No reading content available\nfor this chapter yet.',
+                                              style: TextStyle(
+                                                  color: textColor
+                                                      .withOpacity(0.6),
+                                                  fontSize: 15,
+                                                  height: 1.5),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     )
                                   : ChunkContentPage(
@@ -274,7 +303,7 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                             ),
                     ),
 
-                    // Navigation arrows
+                    // Navigation arrows — shown when there are chunks and not complete
                     if (!state.isSessionComplete && state.chunks.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(
@@ -285,6 +314,7 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            // Previous chunk button
                             FloatingActionButton(
                               heroTag: 'prevChunk',
                               mini: true,
@@ -302,6 +332,29 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                                 size: 16,
                               ),
                             ),
+
+                            // Chunk counter badge in the middle
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: iconColor.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: iconColor.withOpacity(0.15),
+                                ),
+                              ),
+                              child: Text(
+                                '${state.currentChunkIndex + 1} / ${state.chunks.length}',
+                                style: TextStyle(
+                                  color: iconColor.withOpacity(0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+
+                            // Next chunk / finish chapter button
                             FloatingActionButton(
                               heroTag: 'nextChunk',
                               mini: true,
@@ -309,8 +362,12 @@ class _ChunkedReadingScreenState extends ConsumerState<ChunkedReadingScreen> {
                               backgroundColor:
                                   const Color(0xFFB062FF).withOpacity(0.9),
                               onPressed: () => controller.nextChunk(),
-                              child: const Icon(
-                                Icons.arrow_forward_ios,
+                              child: Icon(
+                                // Show checkmark on the last chunk so user knows it finishes
+                                state.currentChunkIndex ==
+                                        state.chunks.length - 1
+                                    ? Icons.check
+                                    : Icons.arrow_forward_ios,
                                 color: Colors.white,
                                 size: 16,
                               ),

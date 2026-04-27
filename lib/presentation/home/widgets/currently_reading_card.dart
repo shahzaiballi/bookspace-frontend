@@ -5,6 +5,110 @@ import '../../../../core/utils/responsive_utils.dart';
 import 'package:go_router/go_router.dart';
 import '../../profile/controllers/reading_plan_controller.dart';
 
+/// Wraps [CurrentlyReadingCard] and handles the nullable progress from the home controller.
+/// Shows an empty state when the user hasn't started reading yet.
+class CurrentlyReadingCardWrapper extends ConsumerWidget {
+  final UserProgressEntity? progress;
+
+  const CurrentlyReadingCardWrapper({super.key, required this.progress});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (progress == null) {
+      return _NoBookInProgress(context: context);
+    }
+    return CurrentlyReadingCard(progress: progress!);
+  }
+}
+
+/// Shown on the home screen when the user has no book in progress.
+class _NoBookInProgress extends StatelessWidget {
+  final BuildContext context;
+  const _NoBookInProgress({required this.context});
+
+  @override
+  Widget build(BuildContext ctx) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: ctx.responsive.wp(20)),
+      padding: EdgeInsets.all(ctx.responsive.sp(24)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ctx.responsive.sp(24)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2D1B52), Color(0xFF1A2340), Color(0xFF0F1A33)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFB062FF).withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.auto_stories_outlined,
+            color: Colors.white.withOpacity(0.3),
+            size: ctx.responsive.sp(48),
+          ),
+          SizedBox(height: ctx.responsive.sp(16)),
+          Text(
+            'Start your first book',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: ctx.responsive.sp(18),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: ctx.responsive.sp(8)),
+          Text(
+            'Add a book to your library and begin\nyour reading journey today.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: ctx.responsive.sp(13),
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: ctx.responsive.sp(20)),
+          GestureDetector(
+            onTap: () => ctx.push('/search'),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: ctx.responsive.wp(24),
+                vertical: ctx.responsive.sp(12),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(ctx.responsive.sp(14)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.search_rounded,
+                      color: const Color(0xFF0F1626),
+                      size: ctx.responsive.sp(18)),
+                  SizedBox(width: ctx.responsive.wp(8)),
+                  Text(
+                    'Discover Books',
+                    style: TextStyle(
+                      color: const Color(0xFF0F1626),
+                      fontSize: ctx.responsive.sp(14),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class CurrentlyReadingCard extends ConsumerStatefulWidget {
   final UserProgressEntity progress;
 
@@ -38,16 +142,12 @@ class _CurrentlyReadingCardState extends ConsumerState<CurrentlyReadingCard>
     super.dispose();
   }
 
-  /// Navigate to the reading screen using the real chapter / chunk from the
-  /// progress entity. Falls back gracefully when they aren't available yet.
   void _continueReading(BuildContext context) {
     final chapterId = widget.progress.currentChapterId;
     if (chapterId == null || chapterId.isEmpty) {
-      // No chapter data yet — go to the chapter list so the user can pick one
       context.push('/chapters/${widget.progress.bookId}');
       return;
     }
-
     context.push(
       '/read/${widget.progress.bookId}/$chapterId',
       extra: {'initialChunkIndex': widget.progress.currentChunkIndex},
@@ -299,7 +399,7 @@ class _CurrentlyReadingCardState extends ConsumerState<CurrentlyReadingCard>
 
                     SizedBox(height: context.responsive.sp(20)),
 
-                    // Continue reading — uses real chapter & chunk
+                    // Continue reading button
                     _PremiumButton(
                       label: 'Continue Reading',
                       icon: Icons.play_arrow_rounded,

@@ -8,7 +8,7 @@ import '../../../core/providers/progress_refresh_provider.dart';
 // (isCompleted, isActive) refreshes in real time after reading sessions.
 final chapterListProvider = FutureProvider.family<List<ChapterEntity>, String>((ref, bookId) {
   // Real-time update: refetch chapter list when reading progress changes.
-  ref.watch(pr3t24NpUrJMNunMMASmhAM953bFGeLXzN7);
+  ref.watch(progressRefreshProvider);
   final repo = ref.watch(bookRepositoryProvider);
   return repo.getChapters(bookId);
 });
