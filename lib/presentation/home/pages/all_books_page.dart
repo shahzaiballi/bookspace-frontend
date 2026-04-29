@@ -115,7 +115,7 @@ class _AllBooksPageState extends ConsumerState<AllBooksPage> {
                     book.imageUrl,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: Colors.white10),
+                    errorBuilder: (_, _, _) => Container(color: Colors.white10),
                   ),
                 ),
               ),

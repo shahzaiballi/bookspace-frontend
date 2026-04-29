@@ -34,7 +34,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 // Helper class to listen to Auth changes and refresh GoRouter
 class AuthRefreshListenable extends ChangeNotifier {
   AuthRefreshListenable(Ref ref) {
-    ref.listen(authControllerProvider, (_, __) => notifyListeners());
+    ref.listen(authControllerProvider, (_, _) => notifyListeners());
   }
 }
 

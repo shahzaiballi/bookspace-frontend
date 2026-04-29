@@ -95,7 +95,7 @@ class _LibraryBookCardState extends ConsumerState<LibraryBookCard>
                         height: context.responsive.sp(102),
                         width: context.responsive.wp(68),
                         fit: BoxFit.cover,
-                        frameBuilder: (_, child, frame, __) {
+                        frameBuilder: (_, child, frame, _) {
                           if (frame != null && !_imageLoaded) {
                             WidgetsBinding.instance.addPostFrameCallback(
                               (_) => setState(() => _imageLoaded = true),
@@ -107,7 +107,7 @@ class _LibraryBookCardState extends ConsumerState<LibraryBookCard>
                             child: child,
                           );
                         },
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                           height: context.responsive.sp(102),
                           width: context.responsive.wp(68),
                           color: const Color(0xFF1E233D),
@@ -522,7 +522,7 @@ class _ShimmerBoxState extends State<_ShimmerBox>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(

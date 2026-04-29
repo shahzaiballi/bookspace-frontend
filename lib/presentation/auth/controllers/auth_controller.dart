@@ -70,7 +70,7 @@ class AuthController extends AsyncNotifier<UserEntity?> {
     try {
       await _repository.logout();
       state = const AsyncData(null);
-    } catch (e, st) {
+    } catch (e) {
       // Even if logout API fails, clear local state and tokens
       await ApiClient.instance.clearTokens();
       state = const AsyncData(null);

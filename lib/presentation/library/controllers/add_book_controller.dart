@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/network/api_client.dart';
 import 'package:flutter/foundation.dart';
@@ -26,17 +24,17 @@ class AddBookController extends AutoDisposeAsyncNotifier<void> {
         throw Exception('No file selected');
       }
 
-      // ✅ ApiClient handles auth token + refresh automatically!
-      final response = await ApiClient.instance.uploadFile(
-        endpoint: '/api/v1/books/upload/',
-        filePath: filePath,
-        fileBytes: fileBytes,
-        fileName: fileName,
-        fields: {
-          'title': title,
-          if (author.trim().isNotEmpty) 'author': author.trim(),
-        },
-      );
+    final response = await ApiClient.instance.uploadFile(
+  endpoint: '/api/v1/books/upload/',
+  fieldName: 'pdf_file', // ✅ THIS is the fix
+  filePath: filePath,
+  fileBytes: fileBytes,
+  fileName: "book.pdf", // ✅ actual file name (optional but better)
+  fields: {
+    'title': title,
+    if (author.trim().isNotEmpty) 'author': author.trim(),
+  },
+);
 
       debugPrint('📤 Upload response: ${response.statusCode}');
 

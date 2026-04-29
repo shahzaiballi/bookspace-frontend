@@ -5,7 +5,6 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../auth/widgets/custom_text_field.dart';
 import '../../auth/widgets/primary_button.dart';
 import '../controllers/profile_controller.dart';
-import '../../../data/repositories/profile_repository_impl.dart';
 
 class ChangePasswordPage extends ConsumerStatefulWidget {
   const ChangePasswordPage({super.key});

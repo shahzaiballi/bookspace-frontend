@@ -106,7 +106,7 @@ class _MinimalBookRowCardState extends State<MinimalBookRowCard>
                           child: child,
                         );
                       },
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         height: context.responsive.sp(88),
                         width: context.responsive.wp(60),
                         color: const Color(0xFF1E233D),
@@ -192,7 +192,7 @@ class _MinimalBookRowCardState extends State<MinimalBookRowCard>
                                 size: context.responsive.sp(12)),
                             SizedBox(width: context.responsive.wp(3)),
                             Text(
-                              '${widget.book.readersCount}',
+                              widget.book.readersCount,
                               style: TextStyle(
                                 color: Colors.white30,
                                 fontSize: context.responsive.sp(11),
@@ -289,7 +289,7 @@ class _ShimmerBoxState extends State<_ShimmerBox>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(

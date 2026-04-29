@@ -223,7 +223,7 @@ class _HorizontalBookCardState extends State<_HorizontalBookCard>
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        frameBuilder: (_, child, frame, __) {
+                        frameBuilder: (_, child, frame, _) {
                           if (frame != null && !_imageLoaded) {
                             WidgetsBinding.instance.addPostFrameCallback(
                                 (_) =>
@@ -235,7 +235,7 @@ class _HorizontalBookCardState extends State<_HorizontalBookCard>
                             child: child,
                           );
                         },
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                           color: const Color(0xFF1E233D),
                           child: Icon(Icons.book,
                               color: Colors.white24,
@@ -400,7 +400,7 @@ class _ShimmerBoxState extends State<_ShimmerBox>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(

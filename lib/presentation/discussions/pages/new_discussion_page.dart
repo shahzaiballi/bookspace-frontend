@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../auth/widgets/custom_text_field.dart';
-import '../../auth/widgets/primary_button.dart';
 import '../controllers/discussion_controller.dart';
 import '../../../data/repositories/discussion_repository_impl.dart';
 

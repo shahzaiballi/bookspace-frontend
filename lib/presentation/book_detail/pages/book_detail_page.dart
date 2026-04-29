@@ -339,7 +339,7 @@ class _ShimmerBlockState extends State<_ShimmerBlock>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         height: widget.height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

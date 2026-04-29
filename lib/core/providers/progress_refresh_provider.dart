@@ -3,6 +3,7 @@
 /// A dedicated lightweight provider that acts as a "refresh signal".
 /// When incremented, all providers that watch it will automatically
 /// refetch their data — giving us real-time updates without circular imports.
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

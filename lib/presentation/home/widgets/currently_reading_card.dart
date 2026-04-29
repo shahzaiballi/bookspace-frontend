@@ -274,7 +274,7 @@ class _CurrentlyReadingCardState extends ConsumerState<CurrentlyReadingCard>
                                       height: context.responsive.sp(90),
                                       width: context.responsive.sp(62),
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
+                                      errorBuilder: (_, _, _) =>
                                           _placeholderCover(context),
                                     )
                                   : _placeholderCover(context),

@@ -164,7 +164,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ),
                   loading: () => _loaderSliver(),
-                  error: (_, __) => _errorSliver(),
+                  error: (_, _) => _errorSliver(),
                 ),
 
                 _gap(),
@@ -198,7 +198,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final name = profile.when(
       data: (p) => (p.name ?? '').split(' ').first,
       loading: () => '',
-      error: (_, __) => 'Reader',
+      error: (_, _) => 'Reader',
     );
 
     return Padding(
@@ -262,7 +262,7 @@ class _HomePageState extends ConsumerState<HomePage>
     return TweenAnimationBuilder(
       duration: Duration(milliseconds: 300 + (index * 50)),
       tween: Tween(begin: 0.0, end: 1.0),
-      builder: (_, double val, __) => Opacity(
+      builder: (_, double val, _) => Opacity(
         opacity: val,
         child: Transform.translate(
           offset: Offset(0, 20 * (1 - val)),
@@ -280,7 +280,7 @@ class _HomePageState extends ConsumerState<HomePage>
         padding: EdgeInsets.all(24),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) =>
+      error: (_, _) =>
           const Center(child: Text("Error", style: TextStyle(color: Colors.white))),
     );
   }

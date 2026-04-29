@@ -525,7 +525,7 @@ class _ProcessingView extends StatelessWidget {
                   ),
                   AnimatedBuilder(
                     animation: progressAnim,
-                    builder: (_, __) => Text(
+                    builder: (_, _) => Text(
                       '${(progressAnim.value.clamp(0.0, 1.0) * 100).toInt()}%',
                       style: TextStyle(
                         color: stage.color,
@@ -544,7 +544,7 @@ class _ProcessingView extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.08),
                   child: AnimatedBuilder(
                     animation: progressAnim,
-                    builder: (_, __) => FractionallySizedBox(
+                    builder: (_, _) => FractionallySizedBox(
                       alignment: Alignment.centerLeft,
                       widthFactor: progressAnim.value.clamp(0.0, 1.0),
                       child: AnimatedBuilder(
@@ -695,7 +695,7 @@ class _StageStepRow extends StatelessWidget {
                   : isCurrent
                       ? AnimatedBuilder(
                           animation: pulseAnim,
-                          builder: (_, __) => Icon(
+                          builder: (_, _) => Icon(
                             stage.icon,
                             color: stage.color,
                             size: context.responsive.sp(14),
@@ -787,7 +787,7 @@ class _DotsLoaderState extends State<_DotsLoader>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
+      builder: (_, _) {
         final frame = (_ctrl.value * 4).floor() % 4;
         final dots = '.' * (frame + 1);
         return Text(

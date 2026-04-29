@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/entities/post_entity.dart';
 import '../../../../domain/entities/reply_entity.dart';
-import '../../../../data/repositories/discussion_repository_impl.dart';
 import 'discussion_controller.dart';
 
 // ── Post Detail Provider ──────────────────────────────────────────────────────
