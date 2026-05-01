@@ -16,9 +16,11 @@ import '../widgets/horizontal_book_list.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
 import '../../library/pages/library_page.dart';
+import '../../library/pages/add_book_page.dart';
 import '../../discussions/pages/discussions_page.dart';
 import '../../profile/pages/profile_page.dart';
 import '../../profile/controllers/profile_controller.dart';
+import '../../progress/pages/progress_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -72,13 +74,40 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   Widget build(BuildContext context) {
     if (_currentIndex != 0) {
+      late Widget page;
+      
+      switch (_currentIndex) {
+        case 1:
+          page = const LibraryPage();
+          break;
+        case 2:
+          // Upload modal
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const AddBookPage(),
+            ).then((_) {
+              // Reset to home after modal closes
+              setState(() => _currentIndex = 0);
+            });
+          });
+          page = const SizedBox.shrink();
+          break;
+        case 3:
+          page = const DiscussionsPage();
+          break;
+        case 4:
+          page = const ProgressPage();
+          break;
+        default:
+          page = const SizedBox.shrink();
+      }
+      
       return Scaffold(
         backgroundColor: const Color(0xFF0F1626),
-        body: _currentIndex == 1
-            ? const LibraryPage()
-            : _currentIndex == 2
-                ? const DiscussionsPage()
-                : const ProfilePage(),
+        body: page,
         bottomNavigationBar: CustomBottomNavBar(
           currentIndex: _currentIndex,
           onTap: (i) => setState(() => _currentIndex = i),
@@ -195,6 +224,12 @@ class _HomePageState extends ConsumerState<HomePage>
   // ================= UI COMPONENTS =================
 
   Widget _buildGlassHeader(AsyncValue profile) {
+    final profileData = profile.when(
+      data: (p) => p,
+      loading: () => null,
+      error: (_, _) => null,
+    );
+    
     final name = profile.when(
       data: (p) => (p.name ?? '').split(' ').first,
       loading: () => '',
@@ -208,7 +243,7 @@ class _HomePageState extends ConsumerState<HomePage>
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(20),
@@ -217,15 +252,55 @@ class _HomePageState extends ConsumerState<HomePage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "${_getGreeting()}, ${name.isEmpty ? 'Reader' : name} 👋",
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
+                // Profile Circle Button
+                GestureDetector(
+                  onTap: () {
+                    context.push('/profile');
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFB062FF).withOpacity(0.5),
+                        width: 2,
+                      ),
+                    ),
+                    child: profileData?.avatarUrl != null &&
+                            profileData!.avatarUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.network(
+                              profileData.avatarUrl!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFB062FF),
+                            ),
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(width: context.responsive.sp(8)),
+                Expanded(
+                  child: Text(
+                    "${_getGreeting()}, ${name.isEmpty ? 'Reader' : name} 👋",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: context.responsive.sp(16),
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => context.push('/search'),
                   icon: const Icon(Icons.search, color: Colors.white),
                 )
               ],

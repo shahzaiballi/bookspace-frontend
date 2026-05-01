@@ -36,23 +36,6 @@ class LibraryPage extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                             color: const Color(0xFFB062FF).withOpacity(0.15),
-                             shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            icon: Icon(Icons.add, color: const Color(0xFFB062FF), size: context.responsive.sp(22)),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true, // Required for SingleChildScrollView with keyboard
-                                backgroundColor: Colors.transparent, // Background transparent to show modal styling
-                                builder: (context) => const AddBookPage(),
-                              );
-                            },
-                          ),
-                        )
                       ],
                     ),
                   ),

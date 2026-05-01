@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../presentation/profile/pages/profile_page.dart';
 import '../../presentation/profile/pages/edit_profile_page.dart';
 import '../../presentation/profile/pages/change_password_page.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ import '../../presentation/book_summary/pages/chapter_summary_page.dart';
 import '../../presentation/chunked_reading/pages/chunked_reading_screen.dart';
 import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/flashcards/pages/flashcard_page.dart';
+import '../../presentation/progress/pages/progress_page.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -121,6 +123,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'home',
         builder: (context, state) => const HomePage(),
       ),
+      GoRoute(
+  path: '/profile',
+  name: 'profile',
+  builder: (context, state) => const ProfilePage(),
+),
       GoRoute(
   path: '/profile/edit',
   name: 'edit_profile',

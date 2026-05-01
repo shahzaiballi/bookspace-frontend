@@ -30,13 +30,18 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar>
         activeIcon: Icons.library_books_rounded,
         label: 'Library'),
     _NavItem(
+        icon: Icons.add_rounded,
+        activeIcon: Icons.add_rounded,
+        label: 'Upload',
+        isSpecial: true),
+    _NavItem(
         icon: Icons.chat_bubble_outline_rounded,
         activeIcon: Icons.chat_bubble_rounded,
         label: 'Community'),
     _NavItem(
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        label: 'Profile'),
+        icon: Icons.show_chart_rounded,
+        activeIcon: Icons.show_chart_rounded,
+        label: 'Progress'),
   ];
 
   @override
@@ -131,6 +136,60 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Special handling for Upload button
+    if (item.isSpecial) {
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Transform.scale(
+          scale: scaleAnimation.value,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Special Upload Button - Larger and More Prominent
+              Container(
+                width: context.responsive.sp(50),
+                height: context.responsive.sp(50),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFB062FF),
+                      const Color(0xFF7B3FF2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFB062FF).withOpacity(0.4),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  item.icon,
+                  color: Colors.white,
+                  size: context.responsive.sp(28),
+                ),
+              ),
+              SizedBox(height: context.responsive.sp(4)),
+              Text(
+                item.label,
+                style: TextStyle(
+                  color: const Color(0xFFB062FF),
+                  fontSize: context.responsive.sp(10),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Regular nav items
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -204,11 +263,13 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+  final bool isSpecial;
 
   const _NavItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
+    this.isSpecial = false,
   });
 }
 
